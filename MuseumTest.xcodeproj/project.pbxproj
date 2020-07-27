@@ -22,6 +22,11 @@
 		98E17F7E24CC388300CC5493 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98E17F7D24CC388300CC5493 /* Assets.xcassets */; };
 		98E17F8124CC388300CC5493 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 98E17F7F24CC388300CC5493 /* LaunchScreen.storyboard */; };
 		98E87A8524CEBCF80004D609 /* ArtObjectsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E87A8424CEBCF80004D609 /* ArtObjectsViewModel.swift */; };
+		B82EE65A24CF38F200E999E8 /* PageManaged+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82EE65624CF38F200E999E8 /* PageManaged+CoreDataClass.swift */; };
+		B82EE65B24CF38F200E999E8 /* PageManaged+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82EE65724CF38F200E999E8 /* PageManaged+CoreDataProperties.swift */; };
+		B82EE65C24CF38F200E999E8 /* ArtObjectManaged+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82EE65824CF38F200E999E8 /* ArtObjectManaged+CoreDataClass.swift */; };
+		B82EE65D24CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82EE65924CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift */; };
+		B82EE65F24CF3D8D00E999E8 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +47,11 @@
 		98E17F8024CC388300CC5493 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		98E17F8224CC388300CC5493 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		98E87A8424CEBCF80004D609 /* ArtObjectsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtObjectsViewModel.swift; sourceTree = "<group>"; };
+		B82EE65624CF38F200E999E8 /* PageManaged+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PageManaged+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B82EE65724CF38F200E999E8 /* PageManaged+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PageManaged+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B82EE65824CF38F200E999E8 /* ArtObjectManaged+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ArtObjectManaged+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B82EE65924CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ArtObjectManaged+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +68,11 @@
 		9880CBA124CDBE0200949E79 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B82EE65624CF38F200E999E8 /* PageManaged+CoreDataClass.swift */,
+				B82EE65724CF38F200E999E8 /* PageManaged+CoreDataProperties.swift */,
+				B82EE65824CF38F200E999E8 /* ArtObjectManaged+CoreDataClass.swift */,
+				B82EE65924CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift */,
+				98E17F7A24CC387E00CC5493 /* MuseumTest.xcdatamodeld */,
 				9880CBA524CDEC3D00949E79 /* ArtObject.swift */,
 			);
 			path = Models;
@@ -110,12 +125,12 @@
 				9880CBA124CDBE0200949E79 /* Models */,
 				98890B7E24CC7EE600A8A268 /* Networking */,
 				98E17F7124CC387E00CC5493 /* AppDelegate.swift */,
+				B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */,
 				98E17F7324CC387E00CC5493 /* SceneDelegate.swift */,
 				98E17F7724CC387E00CC5493 /* Main.storyboard */,
 				98E17F7D24CC388300CC5493 /* Assets.xcassets */,
 				98E17F7F24CC388300CC5493 /* LaunchScreen.storyboard */,
 				98E17F8224CC388300CC5493 /* Info.plist */,
-				98E17F7A24CC387E00CC5493 /* MuseumTest.xcdatamodeld */,
 			);
 			path = MuseumTest;
 			sourceTree = "<group>";
@@ -191,14 +206,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B82EE65A24CF38F200E999E8 /* PageManaged+CoreDataClass.swift in Sources */,
 				98890B7924CC759B00A8A268 /* CollectionResponse.swift in Sources */,
+				B82EE65C24CF38F200E999E8 /* ArtObjectManaged+CoreDataClass.swift in Sources */,
 				98E17F7624CC387E00CC5493 /* ViewController.swift in Sources */,
 				98E17F7224CC387E00CC5493 /* AppDelegate.swift in Sources */,
 				9880CBA024CC8BFB00949E79 /* ArtObjectsViewController.swift in Sources */,
 				98890B7724CC5DE400A8A268 /* MuseumApiClient.swift in Sources */,
+				B82EE65B24CF38F200E999E8 /* PageManaged+CoreDataProperties.swift in Sources */,
 				98E17F7424CC387E00CC5493 /* SceneDelegate.swift in Sources */,
 				9880CBA624CDEC3D00949E79 /* ArtObject.swift in Sources */,
+				B82EE65D24CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift in Sources */,
 				98890B7B24CC788C00A8A268 /* DataResponseError.swift in Sources */,
+				B82EE65F24CF3D8D00E999E8 /* CoreDataStack.swift in Sources */,
 				98E17F7C24CC387E00CC5493 /* MuseumTest.xcdatamodeld in Sources */,
 				98E87A8524CEBCF80004D609 /* ArtObjectsViewModel.swift in Sources */,
 				9880CBA324CDE43B00949E79 /* ArtObjectTableViewCell.swift in Sources */,

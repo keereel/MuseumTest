@@ -62,14 +62,14 @@ final class ArtObjectsViewModel {
     guard let page = collectionResponse.pageNumber else {
       return
     }
-    // test
+    // TODO debug mofifier, remove it
     let loadedObjects = collectionResponse.artObjects.map {
       ArtObject(title: "\(page): \($0.objectNumber) \($0.title)", objectNumber: $0.objectNumber)
     }
     //
-    //self.objects.append(contentsOf: artObjects)
     
     // update dataSource
+    //self.objects.append(contentsOf: artObjects)
     self.totalObjects = collectionResponse.count
     let firstIndexOnPage = minIndex(onPage: page)
     let lastIndexOnPage = maxIndex(onPage: page)
@@ -96,8 +96,19 @@ final class ArtObjectsViewModel {
     DispatchQueue.main.async {
       self.delegate?.onFetchCompleted(indexPaths: indexPaths)
     }
+    
+    // save to persistent store
+    saveToPersistentStore(collectionResponse: collectionResponse)
     //}
   }
+  
+  
+  // MARK: CoreData
+  
+  func saveToPersistentStore(collectionResponse: CollectionResponse) {
+    // TODO save to coredata
+  }
+  
   
   // MARK: Helpers
   
