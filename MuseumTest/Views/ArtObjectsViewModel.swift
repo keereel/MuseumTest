@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreData
 
 protocol ArtObjectsViewModelDelegate: AnyObject {
   func onFetchCompleted(indexPaths: [IndexPath])
@@ -19,24 +20,46 @@ final class ArtObjectsViewModel {
   private let queryString: String
   private let apiClient: MuseumApiClient = MuseumApiClient()
   
-  private let fetchSuccessHandlerQueue = DispatchQueue(label: "fetchSuccessHandlerQueue", qos: .default, attributes: .concurrent)
+  private let pageEntityName: String = "PageManaged"
+  private let artObjectEntityName: String = "ArtObjectManaged"
+  private var context: NSManagedObjectContext {
+    CoreDataStack.shared.persistentContainer.viewContext
+  }
+  
+  //private let fetchSuccessHandlerQueue = DispatchQueue(label: "fetchSuccessHandlerQueue", qos: .default, attributes: .concurrent)
   
   //var currentPage: Int = 0
   //var firstIndexOnPage: Int = 0
   //var lastIndexOnPage: Int = 0
+  
   var totalObjects = 0
   
   var objects: [ArtObject] = []
   var count: Int {
     objects.count
   }
+  //let refreshInterval: Int = 300
+  let refreshInterval: Int = 30
   
   init(queryString: String, delegate: ArtObjectsViewModelDelegate) {
     self.queryString = queryString
     self.delegate = delegate
   }
- 
+  
   func fetch(page: Int) {
+    // Fetch from persistent store
+    if let pageManaged = findPage(page: page),
+      let lastRefreshed = pageManaged.refreshDate,
+      Date() < lastRefreshed.addingTimeInterval(TimeInterval(refreshInterval)) {
+      // fetched from persistent store isn't outdated, so use it instead of fetching from server
+      
+      // TODO refresh datasource
+      //self.fetchSuccessHandler(collectionResponse: collectionResponse, saveFetched: false)
+      
+      return
+    }
+    
+    // Fetch from server
     apiClient.fetchArtObjects(queryString: queryString, page: page) { (result) in
       switch result {
       case .failure(let error):
@@ -105,9 +128,57 @@ final class ArtObjectsViewModel {
   
   // MARK: CoreData
   
-  func saveToPersistentStore(collectionResponse: CollectionResponse) {
-    // TODO save to coredata
+  func findPage(page: Int) -> PageManaged? {
+    let fetchRequest: NSFetchRequest<PageManaged> = NSFetchRequest(entityName: pageEntityName)
+    let pagePredicate = NSPredicate(format: "page == %i", page)
+    let queryStringPredicate = NSPredicate(format: "queryString == %@", queryString)
+    let compoundPredicate = NSCompoundPredicate(type: NSCompoundPredicate.LogicalType.and, subpredicates: [pagePredicate, queryStringPredicate])
+    fetchRequest.predicate = compoundPredicate
+    
+    do {
+      let result = try context.fetch(fetchRequest)
+      // dbg
+      print("for page \(page) queryString \(queryString) found: \(result.count)")
+      /*
+      result.forEach { (res) in
+        print("--page: \(res.page)")
+        print("--queryString: \(res.queryString)")
+        print("--refreshDate: \(res.refreshDate)")
+      }
+      */
+      //
+      return result.first
+    } catch {
+      return nil
+    }
   }
+  
+  func saveToPersistentStore(collectionResponse: CollectionResponse) {
+    guard let pageNumber = collectionResponse.pageNumber else {
+      return
+    }
+    
+    if let pageManaged = findPage(page: pageNumber) {
+      pageManaged.queryString = queryString
+      pageManaged.page = Int16(pageNumber)
+      pageManaged.refreshDate = Date()
+      print("saveToPersistentStore refreshed")
+    } else {
+      guard let entityDescription = NSEntityDescription.entity(forEntityName: pageEntityName, in: context),
+        let createdPageManaged = NSManagedObject(entity: entityDescription, insertInto: context) as? PageManaged else {
+          return
+      }
+      createdPageManaged.queryString = queryString
+      createdPageManaged.page = Int16(pageNumber)
+      createdPageManaged.refreshDate = Date()
+      //createdPageManaged.artObjects
+      print("saveToPersistentStore created")
+    }
+  
+    CoreDataStack.shared.saveContext()
+  }
+  
+  
   
   
   // MARK: Helpers
