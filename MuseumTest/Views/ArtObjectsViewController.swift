@@ -105,14 +105,11 @@ extension ArtObjectsViewController: UITableViewDataSource {
 
 extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
   func onFetchCompleted(indexPaths: [IndexPath]) {
+    //
     print("viewModel.count \(viewModel.count)")
     //print("tableView.numberOfRows(inSection: 0) \(tableView.numberOfRows(inSection: 0))")
     print("indexPaths \(indexPaths)")
-    // TODO by indexes
-    // OK
-    //tableView.reloadData()
-    // OK
-    //tableView.insertRows(at: indexPaths, with: .none)
+    //
     /*
     tableView.beginUpdates()
     for ip in indexPaths {
@@ -120,7 +117,7 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
     }
     tableView.endUpdates()
     */
-      
+    
     tableView.beginUpdates()
     indexPaths.forEach { (indexPath) in
       //print("  tableView.numberOfRows = \(tableView.numberOfRows(inSection: 0))")

@@ -41,12 +41,18 @@ final class ArtObjectsViewModel {
   //let refreshInterval: Int = 300
   let refreshInterval: Int = 30
   
+  private var pagesAlreadyInDataSource: [Int: Date] = [:]
+  
   init(queryString: String, delegate: ArtObjectsViewModelDelegate) {
     self.queryString = queryString
     self.delegate = delegate
   }
   
   func fetch(page: Int) {
+    // First of all, is it outdated
+    // TODO stopped here pagesAlreadyInDataSource
+    //let dateOfPage =
+    
     // First of all, try to fetch from persistent store
     if let pageManaged = fetchFromPersistentStore(page: page),
       let lastRefreshed = pageManaged.refreshDate,
@@ -55,7 +61,12 @@ final class ArtObjectsViewModel {
       
       print("fetched: page \(page) from CoreData")
       let artObjects = artObjectsManaged.compactMap { artObject(with: $0) }
-      updateDataSourceAndUI(with: artObjects, forPageNumber: page)
+      // TODO debug mofifier, remove it
+      let loadedObjects = artObjects.map {
+        ArtObject(title: "CD \(page): \($0.objectNumber) \($0.title)", objectNumber: $0.objectNumber)
+      }
+      //
+      updateDataSourceAndUI(with: loadedObjects, forPageNumber: page)
       
       return
     }
@@ -90,7 +101,7 @@ final class ArtObjectsViewModel {
     }
     // TODO debug mofifier, remove it
     let loadedObjects = collectionResponse.artObjects.map {
-      ArtObject(title: "\(page): \($0.objectNumber) \($0.title)", objectNumber: $0.objectNumber)
+      ArtObject(title: "API \(page): \($0.objectNumber) \($0.title)", objectNumber: $0.objectNumber)
     }
     //
     
@@ -139,8 +150,8 @@ final class ArtObjectsViewModel {
     let fetchRequest: NSFetchRequest<PageManaged> = NSFetchRequest(entityName: pageEntityName)
     let pagePredicate = NSPredicate(format: "page == %i", page)
     let queryStringPredicate = NSPredicate(format: "queryString == %@", queryString)
-    let compoundPredicate = NSCompoundPredicate(type: NSCompoundPredicate.LogicalType.and, subpredicates: [pagePredicate, queryStringPredicate])
-    fetchRequest.predicate = compoundPredicate
+    let compound = NSCompoundPredicate(type: .and, subpredicates: [pagePredicate, queryStringPredicate])
+    fetchRequest.predicate = compound
     
     do {
       let result = try context.fetch(fetchRequest)
@@ -210,7 +221,6 @@ final class ArtObjectsViewModel {
     }
   }
   
-  
   func artObject(with artObjectManaged: ArtObjectManaged) -> ArtObject? {
     guard let title = artObjectManaged.title,
       let objectNumber = artObjectManaged.objectNumber else {
@@ -219,6 +229,7 @@ final class ArtObjectsViewModel {
     return ArtObject(title: title, objectNumber: objectNumber)
   }
 
+  
   // MARK: Helpers
   
   var firstPage: Int {
