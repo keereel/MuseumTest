@@ -47,19 +47,20 @@ final class ArtObjectsViewModel {
   }
   
   func fetch(page: Int) {
-    // Fetch from persistent store
-    if let pageManaged = findPage(page: page),
+    // First of all, try to fetch from persistent store
+    if let pageManaged = fetchFromPersistentStore(page: page),
       let lastRefreshed = pageManaged.refreshDate,
-      Date() < lastRefreshed.addingTimeInterval(TimeInterval(refreshInterval)) {
-      // fetched from persistent store isn't outdated, so use it instead of fetching from server
+      Date() < lastRefreshed.addingTimeInterval(TimeInterval(refreshInterval)),
+      let artObjectsManaged = pageManaged.artObjects?.array as? [ArtObjectManaged] {
       
-      // TODO refresh datasource
-      //self.fetchSuccessHandler(collectionResponse: collectionResponse, saveFetched: false)
+      print("fetched: page \(page) from CoreData")
+      let artObjects = artObjectsManaged.compactMap { artObject(with: $0) }
+      updateDataSourceAndUI(with: artObjects, forPageNumber: page)
       
       return
     }
     
-    // Fetch from server
+    // Then, fetch from server
     apiClient.fetchArtObjects(queryString: queryString, page: page) { (result) in
       switch result {
       case .failure(let error):
@@ -74,6 +75,7 @@ final class ArtObjectsViewModel {
           print("artObject \(artObject)")
         }
         */
+        print("fetched: page \(page) from Api")
         self.fetchSuccessHandler(collectionResponse: collectionResponse)
       }
     }
@@ -82,6 +84,7 @@ final class ArtObjectsViewModel {
   
   private func fetchSuccessHandler(collectionResponse: CollectionResponse) {
     //fetchSuccessHandlerQueue.async(flags: .barrier) {
+    
     guard let page = collectionResponse.pageNumber else {
       return
     }
@@ -91,16 +94,25 @@ final class ArtObjectsViewModel {
     }
     //
     
-    // update dataSource
-    //self.objects.append(contentsOf: artObjects)
+    // save to persistent store
+    saveToPersistentStore(collectionResponse: collectionResponse)
+    
     self.totalObjects = collectionResponse.count
+    
+    updateDataSourceAndUI(with: loadedObjects, forPageNumber: page)
+ 
+    //}
+  }
+  
+  private func updateDataSourceAndUI(with artObjects: [ArtObject], forPageNumber page: Int) {
+    // update dataSource
     let firstIndexOnPage = minIndex(onPage: page)
     let lastIndexOnPage = maxIndex(onPage: page)
     for index in firstIndexOnPage...lastIndexOnPage {
       if self.objects.count - 1 < index {
-        self.objects.append(loadedObjects[index-firstIndexOnPage])
+        self.objects.append(artObjects[index-firstIndexOnPage])
       } else {
-        self.objects[index] = loadedObjects[index-firstIndexOnPage]
+        self.objects[index] = artObjects[index-firstIndexOnPage]
       }
     }
     //self.firstIndexOnPage = page * self.apiClient.objectsPerPage
@@ -109,8 +121,7 @@ final class ArtObjectsViewModel {
     //print("loaded page: \(self.currentPage)")
     //print("FOP: \(self.firstIndexOnPage)")
     //print("LOP: \(self.lastIndexOnPage)")
-
-
+    
     // update UI
     var indexPaths: [IndexPath] = []
     for index in firstIndexOnPage...lastIndexOnPage {
@@ -119,16 +130,12 @@ final class ArtObjectsViewModel {
     DispatchQueue.main.async {
       self.delegate?.onFetchCompleted(indexPaths: indexPaths)
     }
-    
-    // save to persistent store
-    saveToPersistentStore(collectionResponse: collectionResponse)
-    //}
   }
   
   
   // MARK: CoreData
   
-  func findPage(page: Int) -> PageManaged? {
+  private func fetchFromPersistentStore(page: Int) -> PageManaged? {
     let fetchRequest: NSFetchRequest<PageManaged> = NSFetchRequest(entityName: pageEntityName)
     let pagePredicate = NSPredicate(format: "page == %i", page)
     let queryStringPredicate = NSPredicate(format: "queryString == %@", queryString)
@@ -153,17 +160,28 @@ final class ArtObjectsViewModel {
     }
   }
   
-  func saveToPersistentStore(collectionResponse: CollectionResponse) {
+  
+  private func saveToPersistentStore(collectionResponse: CollectionResponse) {
     guard let pageNumber = collectionResponse.pageNumber else {
       return
     }
     
-    if let pageManaged = findPage(page: pageNumber) {
+    if let pageManaged = fetchFromPersistentStore(page: pageNumber) {
+    // update page
       pageManaged.queryString = queryString
       pageManaged.page = Int16(pageNumber)
       pageManaged.refreshDate = Date()
-      print("saveToPersistentStore refreshed")
+      
+      pageManaged.artObjects?.forEach {
+          guard let artObjectManaged = $0 as? ArtObjectManaged else { return }
+          context.delete(artObjectManaged)
+      }
+      createArtObjectsManaged(with: collectionResponse.artObjects, forPage: pageManaged)
+      
+      print("saveToPersistentStore update")
+    
     } else {
+    // create page
       guard let entityDescription = NSEntityDescription.entity(forEntityName: pageEntityName, in: context),
         let createdPageManaged = NSManagedObject(entity: entityDescription, insertInto: context) as? PageManaged else {
           return
@@ -171,16 +189,36 @@ final class ArtObjectsViewModel {
       createdPageManaged.queryString = queryString
       createdPageManaged.page = Int16(pageNumber)
       createdPageManaged.refreshDate = Date()
-      //createdPageManaged.artObjects
+      
+      createArtObjectsManaged(with: collectionResponse.artObjects, forPage: createdPageManaged)
+      
       print("saveToPersistentStore created")
+    
     }
   
     CoreDataStack.shared.saveContext()
   }
   
+  private func createArtObjectsManaged(with artObjects: [ArtObject], forPage pageManaged: PageManaged) {
+    for artObject in artObjects {
+      if let entityDescription = NSEntityDescription.entity(forEntityName: artObjectEntityName, in: context),
+        let createdArtObjectManaged = NSManagedObject(entity: entityDescription, insertInto: context) as? ArtObjectManaged {
+        createdArtObjectManaged.title = artObject.title
+        createdArtObjectManaged.objectNumber = artObject.objectNumber
+        createdArtObjectManaged.page = pageManaged
+      }
+    }
+  }
   
   
-  
+  func artObject(with artObjectManaged: ArtObjectManaged) -> ArtObject? {
+    guard let title = artObjectManaged.title,
+      let objectNumber = artObjectManaged.objectNumber else {
+        return nil
+    }
+    return ArtObject(title: title, objectNumber: objectNumber)
+  }
+
   // MARK: Helpers
   
   var firstPage: Int {

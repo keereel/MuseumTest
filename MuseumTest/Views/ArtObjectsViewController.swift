@@ -138,5 +138,6 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
   
   func onFetchFailed(errorText: String) {
     // TODO alert
+    isBeingUpdatedNow = false
   }
 }
