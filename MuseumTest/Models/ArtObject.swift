@@ -11,4 +11,13 @@ import Foundation
 struct ArtObject: Decodable {
   let title: String
   let objectNumber: String
+  let webImage: WebImage?
+  
+  init(title: String,
+       objectNumber: String,
+       webImage: WebImage?) {
+    self.title = title
+    self.objectNumber = objectNumber
+    self.webImage = webImage
+  }
 }

@@ -13,12 +13,14 @@ import CoreData
 
 extension ArtObjectManaged {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<ArtObjectManaged> {
-        return NSFetchRequest<ArtObjectManaged>(entityName: "ArtObjectManaged")
-    }
-
-    @NSManaged public var title: String?
-    @NSManaged public var objectNumber: String?
-    @NSManaged public var page: PageManaged?
+  @nonobjc public class func fetchRequest() -> NSFetchRequest<ArtObjectManaged> {
+    return NSFetchRequest<ArtObjectManaged>(entityName: "ArtObjectManaged")
+  }
+  
+  @NSManaged public var title: String?
+  @NSManaged public var objectNumber: String?
+  @NSManaged public var page: PageManaged?
+  @NSManaged public var imageUrl: String?
+  @NSManaged public var imageGuid: String?
 
 }

@@ -70,7 +70,9 @@ final class ArtObjectsViewModel {
       let artObjects = artObjectsManaged.compactMap { artObject(with: $0) }
       // TODO debug mofifier, remove it
       let loadedObjects = artObjects.map {
-        ArtObject(title: "CD \(page): \($0.objectNumber) \($0.title)", objectNumber: $0.objectNumber)
+        ArtObject(title: "CD \(page): \($0.objectNumber) \($0.title)",
+          objectNumber: $0.objectNumber,
+          webImage: $0.webImage)
       }
       //
       pagesAlreadyInDataSource[page] = lastRefreshed
@@ -100,8 +102,11 @@ final class ArtObjectsViewModel {
     }
     // TODO debug mofifier, remove it
     let loadedObjects = collectionResponse.artObjects.map {
-      ArtObject(title: "API \(page): \($0.objectNumber) \($0.title)", objectNumber: $0.objectNumber)
+      ArtObject(title: "API \(page): \($0.objectNumber) \($0.title)",
+        objectNumber: $0.objectNumber,
+        webImage: $0.webImage)
     }
+    //loadedObjects.forEach { print("\($0.webImage?.url)") }
     //
     
     // save to persistent store
@@ -123,6 +128,10 @@ final class ArtObjectsViewModel {
       }
       return
     }
+    
+    // debug output
+    artObjects.forEach { print("\($0.webImage?.url)") }
+    //
     
     // update dataSource
     let firstIndexOnPage = minIndex(onPage: page)
@@ -216,9 +225,15 @@ final class ArtObjectsViewModel {
     for artObject in artObjects {
       if let entityDescription = NSEntityDescription.entity(forEntityName: artObjectEntityName, in: context),
         let createdArtObjectManaged = NSManagedObject(entity: entityDescription, insertInto: context) as? ArtObjectManaged {
+        
         createdArtObjectManaged.title = artObject.title
         createdArtObjectManaged.objectNumber = artObject.objectNumber
         createdArtObjectManaged.page = pageManaged
+        if let webImage = artObject.webImage {
+          createdArtObjectManaged.imageGuid = webImage.guid
+          createdArtObjectManaged.imageUrl = webImage.url
+        }
+        
       }
     }
   }
@@ -228,7 +243,13 @@ final class ArtObjectsViewModel {
       let objectNumber = artObjectManaged.objectNumber else {
         return nil
     }
-    return ArtObject(title: title, objectNumber: objectNumber)
+    
+    var webImage: WebImage?
+    if let imageGuid = artObjectManaged.imageGuid,
+      let imageUrl = artObjectManaged.imageUrl {
+      webImage = WebImage(guid: imageGuid, url: imageUrl)
+    }
+    return ArtObject(title: title, objectNumber: objectNumber, webImage: webImage)
   }
 
   
