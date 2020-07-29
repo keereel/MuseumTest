@@ -68,4 +68,11 @@ class MuseumApiClient {
     
   }
   
+  func fetchImage(urlString: String,
+                  completion: @escaping (Result<Data, DataResponseError>) -> Void) {
+    
+    // TODO receive from api
+    
+  }
+  
 }

@@ -12,15 +12,18 @@ enum DataResponseError: Error {
   case network
   case decoding
   case query
+  case invalidUrl
   
   var description: String {
     switch self {
     case .network:
-      return "An error occurred while fetching data."
+      return "An error occurred while fetching data"
     case .decoding:
       return "An error occurred while decoding data"
     case .query:
       return "Incorrect query"
+    case .invalidUrl:
+      return "Invalid URL"
     }
   }
 }

@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreData
+import UIKit
 
 protocol ArtObjectsViewModelDelegate: AnyObject {
   func onFetchCompleted(indexPaths: [IndexPath])
@@ -31,6 +32,7 @@ final class ArtObjectsViewModel {
   var totalObjects = 0
   
   var objects: [ArtObject] = []
+  var images: [String: UIImage] = [:]
   var count: Int {
     objects.count
   }
@@ -121,6 +123,10 @@ final class ArtObjectsViewModel {
     //}
   }
   
+  func fetchImage(index: Int, completion: @escaping () -> Void) {
+    // в комплишене будет просто либо приниматься картинка, а fetchImage вызывается из cellForRowAt
+  }
+  
   private func updateDataSourceAndUI(with artObjects: [ArtObject], forPageNumber page: Int) {
     guard artObjects.count > 0 else {
       DispatchQueue.main.async {
@@ -129,9 +135,11 @@ final class ArtObjectsViewModel {
       return
     }
     
+    // update images
     // debug output
     artObjects.forEach { print("\($0.webImage?.url)") }
     //
+    
     
     // update dataSource
     let firstIndexOnPage = minIndex(onPage: page)

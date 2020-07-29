@@ -29,24 +29,7 @@ class ViewController: UIViewController {
     showButton.setTitle("Show results", for: .normal)
     showButton.addTarget(self, action: #selector(showButtonTapped(sender:)), for: .touchUpInside)
     
-    setConstraints()
-    
-    // TODO move to aoVC
-    /*
-    apiClient.fetchArtObjects(queryString: "Rembrand") { (result) in
-      switch result {
-      case .failure(let error):
-        print("ERROR: \(error.description)")
-      case .success(let collection):
-        print("collection.count \(collection.count)")
-        collection.artObjects.forEach { (artObject) in
-          print("artObject \(artObject)")
-        }
-
-      }
-    }
-    */
-    
+    setConstraints()    
   }
   
   private func setConstraints() {
