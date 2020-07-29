@@ -124,18 +124,20 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
     tableView.endUpdates()
     */
     
-    tableView.beginUpdates()
-    indexPaths.forEach { (indexPath) in
-      //print("  tableView.numberOfRows = \(tableView.numberOfRows(inSection: 0))")
-      if indexPath.row > tableView.numberOfRows(inSection: 0) - 1 {
-        print("  insert \(indexPath)")
-        tableView.insertRows(at: [indexPath], with: .none)
-      } else {
-        print("  reload \(indexPath)")
-        tableView.reloadRows(at: [indexPath], with: .none)
+    UIView.performWithoutAnimation {
+      tableView.beginUpdates()
+      indexPaths.forEach { (indexPath) in
+        //print("  tableView.numberOfRows = \(tableView.numberOfRows(inSection: 0))")
+        if indexPath.row > tableView.numberOfRows(inSection: 0) - 1 {
+          print("  insert \(indexPath)")
+          tableView.insertRows(at: [indexPath], with: .none)
+        } else {
+          print("  reload \(indexPath)")
+          tableView.reloadRows(at: [indexPath], with: .none)
+        }
       }
+      tableView.endUpdates()
     }
-    tableView.endUpdates()
     isBeingUpdatedNow = false
   }
   
