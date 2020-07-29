@@ -28,10 +28,6 @@ final class ArtObjectsViewModel {
   
   //private let fetchSuccessHandlerQueue = DispatchQueue(label: "fetchSuccessHandlerQueue", qos: .default, attributes: .concurrent)
   
-  //var currentPage: Int = 0
-  //var firstIndexOnPage: Int = 0
-  //var lastIndexOnPage: Int = 0
-  
   var totalObjects = 0
   
   var objects: [ArtObject] = []
@@ -48,12 +44,23 @@ final class ArtObjectsViewModel {
     self.delegate = delegate
   }
   
+  deinit {
+    print("VM DEINIT")
+  }
+  
   func fetch(page: Int) {
-    // First of all, is it outdated
-    // TODO stopped here pagesAlreadyInDataSource
-    //let dateOfPage =
+    // First of all, check, if this page already in dataSource, and it is not outdated,
+    //    just return to avoid redundant coreData calls
+    if let dateOfPage = pagesAlreadyInDataSource[page],
+      Date() < dateOfPage.addingTimeInterval(TimeInterval(refreshInterval)) {
+      print("not fetched: page \(page) no necessity")
+      DispatchQueue.main.async {
+        self.delegate?.onFetchCompleted(indexPaths: [])
+      }
+      return
+    }
     
-    // First of all, try to fetch from persistent store
+    // Then try to fetch from persistent store
     if let pageManaged = fetchFromPersistentStore(page: page),
       let lastRefreshed = pageManaged.refreshDate,
       Date() < lastRefreshed.addingTimeInterval(TimeInterval(refreshInterval)),
@@ -66,31 +73,23 @@ final class ArtObjectsViewModel {
         ArtObject(title: "CD \(page): \($0.objectNumber) \($0.title)", objectNumber: $0.objectNumber)
       }
       //
+      pagesAlreadyInDataSource[page] = lastRefreshed
       updateDataSourceAndUI(with: loadedObjects, forPageNumber: page)
       
       return
     }
     
-    // Then, fetch from server
+    // And then fetch from server
     apiClient.fetchArtObjects(queryString: queryString, page: page) { (result) in
       switch result {
       case .failure(let error):
-        //
         print("ERROR: \(error.description)")
-        //
         self.delegate?.onFetchFailed(errorText: error.description)
       case .success(let collectionResponse):
-        /*
-        print("collection.count \(collection.count)")
-        collection.artObjects.forEach { (artObject) in
-          print("artObject \(artObject)")
-        }
-        */
         print("fetched: page \(page) from Api")
         self.fetchSuccessHandler(collectionResponse: collectionResponse)
       }
     }
-  
   }
   
   private func fetchSuccessHandler(collectionResponse: CollectionResponse) {
@@ -106,19 +105,28 @@ final class ArtObjectsViewModel {
     //
     
     // save to persistent store
-    saveToPersistentStore(collectionResponse: collectionResponse)
+    let lastUpdatedDate = Date()
+    saveToPersistentStore(collectionResponse: collectionResponse, lastUpdatedDate: lastUpdatedDate)
     
     self.totalObjects = collectionResponse.count
     
+    pagesAlreadyInDataSource[page] = lastUpdatedDate
     updateDataSourceAndUI(with: loadedObjects, forPageNumber: page)
  
     //}
   }
   
   private func updateDataSourceAndUI(with artObjects: [ArtObject], forPageNumber page: Int) {
+    guard artObjects.count > 0 else {
+      DispatchQueue.main.async {
+        self.delegate?.onFetchCompleted(indexPaths: [])
+      }
+      return
+    }
+    
     // update dataSource
     let firstIndexOnPage = minIndex(onPage: page)
-    let lastIndexOnPage = maxIndex(onPage: page)
+    let lastIndexOnPage = firstIndexOnPage + artObjects.count - 1
     for index in firstIndexOnPage...lastIndexOnPage {
       if self.objects.count - 1 < index {
         self.objects.append(artObjects[index-firstIndexOnPage])
@@ -126,12 +134,6 @@ final class ArtObjectsViewModel {
         self.objects[index] = artObjects[index-firstIndexOnPage]
       }
     }
-    //self.firstIndexOnPage = page * self.apiClient.objectsPerPage
-    //self.lastIndexOnPage = (page+1) * self.apiClient.objectsPerPage - 1
-    //self.currentPage = page
-    //print("loaded page: \(self.currentPage)")
-    //print("FOP: \(self.firstIndexOnPage)")
-    //print("LOP: \(self.lastIndexOnPage)")
     
     // update UI
     var indexPaths: [IndexPath] = []
@@ -172,7 +174,7 @@ final class ArtObjectsViewModel {
   }
   
   
-  private func saveToPersistentStore(collectionResponse: CollectionResponse) {
+  private func saveToPersistentStore(collectionResponse: CollectionResponse, lastUpdatedDate: Date) {
     guard let pageNumber = collectionResponse.pageNumber else {
       return
     }
@@ -181,7 +183,7 @@ final class ArtObjectsViewModel {
     // update page
       pageManaged.queryString = queryString
       pageManaged.page = Int16(pageNumber)
-      pageManaged.refreshDate = Date()
+      pageManaged.refreshDate = lastUpdatedDate
       
       pageManaged.artObjects?.forEach {
           guard let artObjectManaged = $0 as? ArtObjectManaged else { return }
@@ -199,7 +201,7 @@ final class ArtObjectsViewModel {
       }
       createdPageManaged.queryString = queryString
       createdPageManaged.page = Int16(pageNumber)
-      createdPageManaged.refreshDate = Date()
+      createdPageManaged.refreshDate = lastUpdatedDate
       
       createArtObjectsManaged(with: collectionResponse.artObjects, forPage: createdPageManaged)
       
@@ -233,22 +235,27 @@ final class ArtObjectsViewModel {
   // MARK: Helpers
   
   var firstPage: Int {
-    0
+    /*
+    In The API page numeration starts from 0, but i found that page 0 always just duplicates page 1.
+    And, respectively, count field from api response, which represents total number of artObjects on all pages, does not includes count of the page 0. For instance, when count field from api response = 16, it will be 3 pages available: page 0 with 10 elements, page 1 with 10 elements, and page 2 with 6 elements.
+    So, i must ignore page number 0, and fetch pages from 1
+    */
+    1
   }
   var lastPage: Int {
-    totalObjects / apiClient.objectsPerPage
+    (totalObjects / apiClient.objectsPerPage) + firstPage
   }
   
   func pageNumber(for indexPath: IndexPath) -> Int {
-    return indexPath.row / apiClient.objectsPerPage
-  }
-  
-  func maxIndex(onPage page: Int) -> Int {
-    return (page+1) * apiClient.objectsPerPage - 1
+    return (indexPath.row / apiClient.objectsPerPage) + firstPage
   }
   
   func minIndex(onPage page: Int) -> Int {
-    return page * self.apiClient.objectsPerPage
+    return (page - firstPage) * self.apiClient.objectsPerPage
+  }
+  
+  func maxIndex(onPage page: Int) -> Int {
+    return (page - firstPage + 1) * apiClient.objectsPerPage - 1
   }
   
 }

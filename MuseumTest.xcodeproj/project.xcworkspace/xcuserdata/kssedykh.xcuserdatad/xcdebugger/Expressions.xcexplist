@@ -3,10 +3,27 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "ArtObjectsViewModel.findPage(page:):ArtObjectsViewModel.swift">
+         contextName = "ArtObjectsViewController.tableView(_:willDisplay:forRowAt:):ArtObjectsViewController.swift">
          <PersistentStrings>
             <PersistentString
-               value = "result[0].refreshDate">
+               value = "viewModel.pageNumber(for: indexPath)">
+            </PersistentString>
+            <PersistentString
+               value = "viewModel.lastPage">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "GLOBAL">
+         <PersistentStrings>
+            <PersistentString
+               value = "previousWillDisplayIndexPath.row">
+            </PersistentString>
+            <PersistentString
+               value = "isBeingUpdatedNow">
+            </PersistentString>
+            <PersistentString
+               value = "indexPath.row">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

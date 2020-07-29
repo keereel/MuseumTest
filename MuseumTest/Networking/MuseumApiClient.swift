@@ -15,6 +15,8 @@ class MuseumApiClient {
   // https://www.rijksmuseum.nl/api/nl/collection?key=ipNvjG2r&involvedMaker=Johannes+Vermeer
   // https://www.rijksmuseum.nl/api/nl/collection?key=ipNvjG2r&q=Rembrand
   //
+  // https://data.rijksmuseum.nl/
+  //
   // rembrandt van rijn
   // johannes vermeer
   

@@ -24,6 +24,10 @@ final class ArtObjectsViewController: UIViewController {
     self.viewModel = vm
   }
   
+  deinit {
+    print("VC DEINIT")
+  }
+  
   required init?(coder aDecoder: NSCoder) {
     super.init(coder: aDecoder)
   }
@@ -45,7 +49,8 @@ final class ArtObjectsViewController: UIViewController {
     tableView.delegate = self
     tableView.register(ArtObjectTableViewCell.self, forCellReuseIdentifier: cellId)
     
-    viewModel.fetch(page: 0)
+    isBeingUpdatedNow = true
+    viewModel.fetch(page: viewModel.firstPage)
   }
   
 }
@@ -57,7 +62,8 @@ extension ArtObjectsViewController: UITableViewDelegate {
       print("MOVE FORWARD")
       if indexPath.row > viewModel.maxIndex(onPage: viewModel.pageNumber(for: indexPath)) - 3
         && !isBeingUpdatedNow
-        && viewModel.pageNumber(for: indexPath) != viewModel.lastPage {
+        //&& viewModel.pageNumber(for: indexPath) != viewModel.lastPage
+        {
           print("load next page \(viewModel.pageNumber(for: indexPath) + 1)")
           isBeingUpdatedNow = true
           viewModel.fetch(page: viewModel.pageNumber(for: indexPath) + 1)
@@ -135,6 +141,9 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
   
   func onFetchFailed(errorText: String) {
     // TODO alert
+    //
+    print("!!! FETCH FAILED: \(errorText)")
+    //
     isBeingUpdatedNow = false
   }
 }
