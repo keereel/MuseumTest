@@ -7,7 +7,7 @@
         <attribute name="title" optional="YES" attributeType="String"/>
         <relationship name="page" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PageManaged" inverseName="artObjects" inverseEntity="PageManaged"/>
     </entity>
-    <entity name="ImageManaged" representedClassName="ImageManaged" syncable="YES" codeGenerationType="class">
+    <entity name="ImageManaged" representedClassName="ImageManaged" syncable="YES">
         <attribute name="guid" optional="YES" attributeType="String"/>
         <attribute name="image" optional="YES" attributeType="Binary"/>
     </entity>
@@ -19,7 +19,7 @@
     </entity>
     <elements>
         <element name="ArtObjectManaged" positionX="-54" positionY="18" width="128" height="118"/>
-        <element name="PageManaged" positionX="-63" positionY="-18" width="128" height="103"/>
         <element name="ImageManaged" positionX="-63" positionY="45" width="128" height="73"/>
+        <element name="PageManaged" positionX="-63" positionY="-18" width="128" height="103"/>
     </elements>
 </model>

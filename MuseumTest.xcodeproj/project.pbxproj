@@ -30,6 +30,8 @@
 		B87C1DB024D1E4D700730DDB /* WebImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DAF24D1E4D700730DDB /* WebImage.swift */; };
 		B87C1DB324D2AF0F00730DDB /* TextError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DB224D2AF0F00730DDB /* TextError.swift */; };
 		B87C1DB524D2E61800730DDB /* ImageLoaderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DB424D2E61800730DDB /* ImageLoaderService.swift */; };
+		B87C1DB824D343A700730DDB /* ImageManaged+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DB624D343A700730DDB /* ImageManaged+CoreDataClass.swift */; };
+		B87C1DB924D343A700730DDB /* ImageManaged+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DB724D343A700730DDB /* ImageManaged+CoreDataProperties.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +60,8 @@
 		B87C1DAF24D1E4D700730DDB /* WebImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebImage.swift; sourceTree = "<group>"; };
 		B87C1DB224D2AF0F00730DDB /* TextError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextError.swift; sourceTree = "<group>"; };
 		B87C1DB424D2E61800730DDB /* ImageLoaderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoaderService.swift; sourceTree = "<group>"; };
+		B87C1DB624D343A700730DDB /* ImageManaged+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageManaged+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B87C1DB724D343A700730DDB /* ImageManaged+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageManaged+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +152,8 @@
 				B82EE65724CF38F200E999E8 /* PageManaged+CoreDataProperties.swift */,
 				B82EE65824CF38F200E999E8 /* ArtObjectManaged+CoreDataClass.swift */,
 				B82EE65924CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift */,
+				B87C1DB624D343A700730DDB /* ImageManaged+CoreDataClass.swift */,
+				B87C1DB724D343A700730DDB /* ImageManaged+CoreDataProperties.swift */,
 			);
 			path = CoreData;
 			sourceTree = "<group>";
@@ -230,9 +236,11 @@
 				98E17F7624CC387E00CC5493 /* ViewController.swift in Sources */,
 				98E17F7224CC387E00CC5493 /* AppDelegate.swift in Sources */,
 				9880CBA024CC8BFB00949E79 /* ArtObjectsViewController.swift in Sources */,
+				B87C1DB924D343A700730DDB /* ImageManaged+CoreDataProperties.swift in Sources */,
 				98890B7724CC5DE400A8A268 /* MuseumApiClient.swift in Sources */,
 				B82EE65B24CF38F200E999E8 /* PageManaged+CoreDataProperties.swift in Sources */,
 				98E17F7424CC387E00CC5493 /* SceneDelegate.swift in Sources */,
+				B87C1DB824D343A700730DDB /* ImageManaged+CoreDataClass.swift in Sources */,
 				9880CBA624CDEC3D00949E79 /* ArtObject.swift in Sources */,
 				B87C1DB324D2AF0F00730DDB /* TextError.swift in Sources */,
 				B82EE65D24CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift in Sources */,

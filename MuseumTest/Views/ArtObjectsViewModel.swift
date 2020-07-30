@@ -23,13 +23,12 @@ final class ArtObjectsViewModel {
   
   private let pageEntityName: String = "PageManaged"
   private let artObjectEntityName: String = "ArtObjectManaged"
+  private let imageEntityName: String = "ImageManaged"
   private var context: NSManagedObjectContext {
     CoreDataStack.shared.persistentContainer.viewContext
   }
   
   private weak var delegate: ArtObjectsViewModelDelegate?
-  
-  //private let fetchSuccessHandlerQueue = DispatchQueue(label: "fetchSuccessHandlerQueue", qos: .default, attributes: .concurrent)
   
   var totalObjects = 0
   
@@ -37,7 +36,7 @@ final class ArtObjectsViewModel {
   var count: Int {
     objects.count
   }
-  private var images: [String: UIImage] = [:]
+  let imageCache = NSCache<NSString, UIImage>()
   
   //let refreshInterval: Int = 300
   let refreshInterval: Int = 30
@@ -52,6 +51,9 @@ final class ArtObjectsViewModel {
   deinit {
     print("DEINIT VM")
   }
+  
+  
+  // MARK: Fetch pages
   
   func fetch(page: Int) {
     // First of all, check, if this page already in dataSource, and it is not outdated,
@@ -100,8 +102,6 @@ final class ArtObjectsViewModel {
   }
   
   private func fetchSuccessHandler(collectionResponse: CollectionResponse) {
-    //fetchSuccessHandlerQueue.async(flags: .barrier) {
-    
     guard let page = collectionResponse.pageNumber else {
       return
     }
@@ -122,8 +122,6 @@ final class ArtObjectsViewModel {
     
     pagesAlreadyInDataSource[page] = lastUpdatedDate
     updateDataSourceAndUI(with: loadedObjects, forPageNumber: page)
- 
-    //}
   }
   
   private func updateDataSourceAndUI(with artObjects: [ArtObject], forPageNumber page: Int) {
@@ -138,7 +136,6 @@ final class ArtObjectsViewModel {
     // debug output
     //artObjects.forEach { print("\($0.webImage?.url)") }
     //
-    
     
     // update dataSource
     let firstIndexOnPage = minIndex(onPage: page)
@@ -161,6 +158,9 @@ final class ArtObjectsViewModel {
     }
   }
   
+  
+  // MARK: Fetch images
+  
   func fetchImage(index: Int, completion: @escaping (Result<UIImage?, TextError>) -> Void) {
     guard index < count else {
         completion(.failure(TextError("Unexpected error")))
@@ -172,22 +172,34 @@ final class ArtObjectsViewModel {
     }
     
     // Taking from cache
-    if let image = images[webImage.guid] {
-      //print("image for index \(index) fetched from dict: \(webImage.guid)")
-      completion(.success(image))
+    if let cachedImage = imageCache.object(forKey: NSString(string: webImage.guid)) {
+      //print("image for index \(index) fetched from cache: \(webImage.guid)")
+      completion(.success(cachedImage))
       return
     }
     
-    //
+    // Fetching from persistent store
+    if let image = fetchImageFromPersistentStore(guid: webImage.guid) {
+      print("image for index \(index) fetched from CoreData: \(webImage.guid)")
+      imageCache.setObject(image, forKey: NSString(string: webImage.guid))
+      completion(.success(image))
+      return
+    }
     
     // Fetching from API
     imageLoader.fetchImage(with: webImage.url) { [weak self] (result) in
       switch result {
       case .success(let data):
         //print("image for index \(index) fetched from API: \(webImage.guid)")
-        let image = UIImage(data: data)
-        self?.images[webImage.guid] = image
-        completion(.success(image))
+        if let image = UIImage(data: data) {
+          self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
+          DispatchQueue.main.async {
+            self?.saveToPersistentStore(image: image, with: webImage.guid)
+          }
+          completion(.success(image))
+        } else {
+          completion(.failure(TextError("Invalid image data")))
+        }
       case .failure(let error):
         // TODO retry?
         completion(.failure(TextError(error.description)))
@@ -195,6 +207,35 @@ final class ArtObjectsViewModel {
     }
   }
   
+  private func fetchImageFromPersistentStore(guid: String) -> UIImage? {
+    let fetchRequest: NSFetchRequest<ImageManaged> = NSFetchRequest(entityName: imageEntityName)
+    let predicate = NSPredicate(format: "guid == %@", guid)
+    fetchRequest.predicate = predicate
+    
+    do {
+      let result = try context.fetch(fetchRequest)
+      guard let imageManaged = result.first,
+        let imageData = imageManaged.image,
+        let image = UIImage(data: imageData)
+        else {
+          return nil
+      }
+      return image
+    } catch {
+      return nil
+    }
+  }
+  
+  private func saveToPersistentStore(image: UIImage, with guid: String) {
+    guard let entityDescription = NSEntityDescription.entity(forEntityName: imageEntityName, in: context),
+      let createdImageManaged = NSManagedObject(entity: entityDescription, insertInto: context) as? ImageManaged else {
+        return
+    }
+    createdImageManaged.guid = guid
+    createdImageManaged.image = image.jpegData(compressionQuality: 0.9)
+    
+    CoreDataStack.shared.saveContext()
+  }
   
   // MARK: CoreData
   
@@ -207,16 +248,6 @@ final class ArtObjectsViewModel {
     
     do {
       let result = try context.fetch(fetchRequest)
-      // dbg
-      print("for page \(page) queryString \(queryString) found: \(result.count)")
-      /*
-      result.forEach { (res) in
-        print("--page: \(res.page)")
-        print("--queryString: \(res.queryString)")
-        print("--refreshDate: \(res.refreshDate)")
-      }
-      */
-      //
       return result.first
     } catch {
       return nil

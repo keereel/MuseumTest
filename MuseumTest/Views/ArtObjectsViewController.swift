@@ -101,20 +101,16 @@ extension ArtObjectsViewController: UITableViewDataSource {
     guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? ArtObjectTableViewCell else {
       return UITableViewCell()
     }
-    //let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! ArtObjectTableViewCell
     
     cell.configure(title: viewModel.objects[indexPath.row].title)
-    //showSpinner()
     viewModel.fetchImage(index: indexPath.row) { (result) in
       DispatchQueue.main.async {
         switch result {
         case .success(let image):
           cell.setImage(image: image)
-          //hideSpinner()
         case .failure(let error):
           // TODO error
           print("VC: image loading error: \(error.description)")
-          //hideSpinner()
         }
       }
     }
@@ -130,13 +126,6 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
     //print("tableView.numberOfRows(inSection: 0) \(tableView.numberOfRows(inSection: 0))")
     print("indexPaths \(indexPaths)")
     //
-    /*
-    tableView.beginUpdates()
-    for ip in indexPaths {
-      tableView.insertRows(at: [ip], with: .none)
-    }
-    tableView.endUpdates()
-    */
     
     UIView.performWithoutAnimation {
       tableView.beginUpdates()
@@ -157,9 +146,7 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
   
   func onFetchFailed(errorText: String) {
     // TODO alert
-    //
     print("!!! FETCH FAILED: \(errorText)")
-    //
     isBeingUpdatedNow = false
   }
 }
