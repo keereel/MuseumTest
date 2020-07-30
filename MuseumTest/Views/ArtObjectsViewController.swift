@@ -59,7 +59,7 @@ extension ArtObjectsViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
     
     if previousWillDisplayIndexPath.row < indexPath.row {
-      print("MOVE FORWARD")
+      //print("MOVE FORWARD")
       if indexPath.row > viewModel.maxIndex(onPage: viewModel.pageNumber(for: indexPath)) - 3
         && !isBeingUpdatedNow
         //&& viewModel.pageNumber(for: indexPath) != viewModel.lastPage
@@ -69,7 +69,7 @@ extension ArtObjectsViewController: UITableViewDelegate {
           viewModel.fetch(page: viewModel.pageNumber(for: indexPath) + 1)
       }
     } else if previousWillDisplayIndexPath.row > indexPath.row {
-      print("MOVE BACKWARD")
+      //print("MOVE BACKWARD")
       if indexPath.row < viewModel.minIndex(onPage: viewModel.pageNumber(for: indexPath)) + 3
         && !isBeingUpdatedNow
         && viewModel.pageNumber(for: indexPath) != viewModel.firstPage {

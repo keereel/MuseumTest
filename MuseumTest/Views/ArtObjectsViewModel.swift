@@ -17,15 +17,17 @@ protocol ArtObjectsViewModelDelegate: AnyObject {
 
 final class ArtObjectsViewModel {
   
-  private weak var delegate: ArtObjectsViewModelDelegate?
   private let queryString: String
   private let apiClient: MuseumApiClient = MuseumApiClient()
+  private let imageLoader: ImageLoaderService = ImageLoaderService()
   
   private let pageEntityName: String = "PageManaged"
   private let artObjectEntityName: String = "ArtObjectManaged"
   private var context: NSManagedObjectContext {
     CoreDataStack.shared.persistentContainer.viewContext
   }
+  
+  private weak var delegate: ArtObjectsViewModelDelegate?
   
   //private let fetchSuccessHandlerQueue = DispatchQueue(label: "fetchSuccessHandlerQueue", qos: .default, attributes: .concurrent)
   
@@ -124,38 +126,6 @@ final class ArtObjectsViewModel {
     //}
   }
   
-  func fetchImage(index: Int, completion: @escaping (Result<UIImage?, TextError>) -> Void) {
-    guard index < count else {
-        completion(.failure(TextError("Unexpected error")))
-        return
-    }
-    guard let webImage = objects[index].webImage else {
-      completion(.success(nil))
-      return
-    }
-    
-    if let image = images[webImage.guid] {
-      print("image fetched from dict: \(webImage.url)")
-      completion(.success(image))
-      return
-    }
-    
-    //DispatchQueue.global().async { [weak self] in
-      apiClient.fetchImage(urlString: webImage.url) { [weak self] (result) in
-        switch result {
-        case .success(let data):
-          print("ok")
-          let image = UIImage(data: data)
-          self?.images[webImage.guid] = image
-          completion(.success(image))
-        case .failure(let error):
-          // TODO retry?
-          completion(.failure(TextError(error.description)))
-        }
-      }
-    //}
-  }
-  
   private func updateDataSourceAndUI(with artObjects: [ArtObject], forPageNumber page: Int) {
     guard artObjects.count > 0 else {
       DispatchQueue.main.async {
@@ -166,7 +136,7 @@ final class ArtObjectsViewModel {
     
     // update images
     // debug output
-    artObjects.forEach { print("\($0.webImage?.url)") }
+    //artObjects.forEach { print("\($0.webImage?.url)") }
     //
     
     
@@ -188,6 +158,40 @@ final class ArtObjectsViewModel {
     }
     DispatchQueue.main.async {
       self.delegate?.onFetchCompleted(indexPaths: indexPaths)
+    }
+  }
+  
+  func fetchImage(index: Int, completion: @escaping (Result<UIImage?, TextError>) -> Void) {
+    guard index < count else {
+        completion(.failure(TextError("Unexpected error")))
+        return
+    }
+    guard let webImage = objects[index].webImage else {
+      completion(.success(nil))
+      return
+    }
+    
+    // Taking from cache
+    if let image = images[webImage.guid] {
+      //print("image for index \(index) fetched from dict: \(webImage.guid)")
+      completion(.success(image))
+      return
+    }
+    
+    //
+    
+    // Fetching from API
+    imageLoader.fetchImage(with: webImage.url) { [weak self] (result) in
+      switch result {
+      case .success(let data):
+        //print("image for index \(index) fetched from API: \(webImage.guid)")
+        let image = UIImage(data: data)
+        self?.images[webImage.guid] = image
+        completion(.success(image))
+      case .failure(let error):
+        // TODO retry?
+        completion(.failure(TextError(error.description)))
+      }
     }
   }
   

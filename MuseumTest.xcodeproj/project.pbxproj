@@ -29,6 +29,7 @@
 		B82EE65F24CF3D8D00E999E8 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */; };
 		B87C1DB024D1E4D700730DDB /* WebImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DAF24D1E4D700730DDB /* WebImage.swift */; };
 		B87C1DB324D2AF0F00730DDB /* TextError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DB224D2AF0F00730DDB /* TextError.swift */; };
+		B87C1DB524D2E61800730DDB /* ImageLoaderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DB424D2E61800730DDB /* ImageLoaderService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +57,7 @@
 		B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		B87C1DAF24D1E4D700730DDB /* WebImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebImage.swift; sourceTree = "<group>"; };
 		B87C1DB224D2AF0F00730DDB /* TextError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextError.swift; sourceTree = "<group>"; };
+		B87C1DB424D2E61800730DDB /* ImageLoaderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoaderService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +100,7 @@
 				98890B7A24CC788C00A8A268 /* DataResponseError.swift */,
 				98890B7C24CC7E3900A8A268 /* HTTPURLResponse+successStatusCode.swift */,
 				98890B7624CC5DE400A8A268 /* MuseumApiClient.swift */,
+				B87C1DB424D2E61800730DDB /* ImageLoaderService.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -234,6 +237,7 @@
 				B87C1DB324D2AF0F00730DDB /* TextError.swift in Sources */,
 				B82EE65D24CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift in Sources */,
 				98890B7B24CC788C00A8A268 /* DataResponseError.swift in Sources */,
+				B87C1DB524D2E61800730DDB /* ImageLoaderService.swift in Sources */,
 				B82EE65F24CF3D8D00E999E8 /* CoreDataStack.swift in Sources */,
 				98E17F7C24CC387E00CC5493 /* MuseumTest.xcdatamodeld in Sources */,
 				98E87A8524CEBCF80004D609 /* ArtObjectsViewModel.swift in Sources */,

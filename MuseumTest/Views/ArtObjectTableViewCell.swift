@@ -14,7 +14,7 @@ final class ArtObjectTableViewCell: UITableViewCell {
   private var img: UIImageView = UIImageView()
   private var title: UILabel = UILabel()
   
-  private let imgSize: CGFloat = 100
+  private let imgSize: CGFloat = 150
   private let contentOffsetX: CGFloat = 20
   private let contentOffsetY: CGFloat = 10
   
@@ -30,7 +30,9 @@ final class ArtObjectTableViewCell: UITableViewCell {
     super.init(style: style, reuseIdentifier: reuseIdentifier)
     
     contentView.addSubview(img)
-    img.backgroundColor = .yellow
+    img.backgroundColor = .lightGray
+    img.contentMode = .scaleAspectFill
+    img.clipsToBounds = true
     contentView.addSubview(title)
     title.backgroundColor = .green
     title.numberOfLines = 0

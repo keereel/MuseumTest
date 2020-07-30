@@ -75,9 +75,8 @@ class MuseumApiClient {
   func fetchImage(urlString: String,
                   completion: @escaping (Result<Data, DataResponseError>) -> Void) {
 
-    /*
     guard let url = URL(string: urlString) else {
-      completion(Result.failure(DataResponseError.query))
+      completion(Result.failure(DataResponseError.invalidUrl))
       return
     }
     
@@ -91,21 +90,14 @@ class MuseumApiClient {
     }
     
     dataTask.resume()
-    */
     
+    /*
     DispatchQueue.global(qos: .background).async {
       let url = URL(string: urlString)
       let data = try? Data(contentsOf: url!)
       completion(.success(data!))
-      /*
-       let image: UIImage = UIImage(data: data!)!
-       DispatchQueue.main.async {
-       self.imageCache.setObject(image, forKey: NSString(string:        (activeUser?.login!)!))
-       cell.imgFollow.image = image
-       }
-       */
     }
-    
+    */
   }
   
 }
