@@ -57,7 +57,6 @@ final class ArtObjectsViewController: UIViewController {
 
 extension ArtObjectsViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-    
     if previousWillDisplayIndexPath.row < indexPath.row {
       //print("MOVE FORWARD")
       if indexPath.row > viewModel.maxIndex(onPage: viewModel.pageNumber(for: indexPath)) - 3
@@ -79,21 +78,11 @@ extension ArtObjectsViewController: UITableViewDelegate {
       }
     }
     previousWillDisplayIndexPath = indexPath
-    
-    
-    /*
-    //ok
-    if indexPath.row > viewModel.lastIndexOnPage - 4 && !isBeingUpdatedNow {
-      isBeingUpdatedNow = true
-      viewModel.fetch(page: viewModel.currentPage + 1)
-    }
-    */
   }
 }
 
 extension ArtObjectsViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    //print("viewModel.count")
     return viewModel.count
   }
   
@@ -103,16 +92,18 @@ extension ArtObjectsViewController: UITableViewDataSource {
     }
     
     cell.configure(title: viewModel.objects[indexPath.row].title)
+    print("VC: cellForRowAt:\(indexPath.row)")
     viewModel.fetchImage(index: indexPath.row) { (result) in
-      DispatchQueue.main.async {
+      //DispatchQueue.main.async {
         switch result {
         case .success(let image):
           cell.setImage(image: image)
+          print("VC: cellForRowAt:\(indexPath.row) image set")
         case .failure(let error):
           // TODO error
           print("VC: image loading error: \(error.description)")
         }
-      }
+      //}
     }
     
     return cell
@@ -122,9 +113,9 @@ extension ArtObjectsViewController: UITableViewDataSource {
 extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
   func onFetchCompleted(indexPaths: [IndexPath]) {
     //
-    print("viewModel.count \(viewModel.count)")
-    //print("tableView.numberOfRows(inSection: 0) \(tableView.numberOfRows(inSection: 0))")
-    print("indexPaths \(indexPaths)")
+    print("VC: onFetchCompleted viewModel.count \(viewModel.count)")
+    print("VC: onFetchCompleted tableView.numberOfRows: \(tableView.numberOfRows(inSection: 0))")
+    print("VC: onFetchCompleted indexPaths \(indexPaths)")
     //
     
     UIView.performWithoutAnimation {
@@ -132,11 +123,11 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
       indexPaths.forEach { (indexPath) in
         //print("  tableView.numberOfRows = \(tableView.numberOfRows(inSection: 0))")
         if indexPath.row > tableView.numberOfRows(inSection: 0) - 1 {
-          print("  insert \(indexPath)")
+          print("VC: onFetchCompleted insert: \(indexPath.row)")
           tableView.insertRows(at: [indexPath], with: .none)
         } else {
-          print("  reload \(indexPath)")
-          tableView.reloadRows(at: [indexPath], with: .none)
+          //print("VC: onFetchCompleted reload: \(indexPath.row)")
+          //tableView.reloadRows(at: [indexPath], with: .none)
         }
       }
       tableView.endUpdates()

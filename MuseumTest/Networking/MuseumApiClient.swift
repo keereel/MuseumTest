@@ -8,7 +8,12 @@
 
 import Foundation
 
-class MuseumApiClient {
+protocol MuseumApiClient {
+  typealias completionHandler = (Result<CollectionResponse, DataResponseError>) -> Void
+  func fetchArtObjects(queryString: String, page: Int, completion: @escaping completionHandler)
+}
+
+final class MuseumApiClientImpl: MuseumApiClient {
   
   // key ipNvjG2r
   // https://www.rijksmuseum.nl/api/nl/collection?key=ipNvjG2r&involvedMaker=Rembrandt+van+Rijn
@@ -19,8 +24,6 @@ class MuseumApiClient {
   //
   // rembrandt van rijn
   // johannes vermeer
-  
-  let objectsPerPage = 10
   
   private let apiKey = "ipNvjG2r"
   
@@ -38,9 +41,8 @@ class MuseumApiClient {
     print("DEINIT MuseumApiClient")
   }
   
-  func fetchArtObjects(queryString: String,
-                       page: Int = 0,
-                       completion: @escaping (Result<CollectionResponse, DataResponseError>) -> Void) {
+  func fetchArtObjects(queryString: String, page: Int, completion: @escaping completionHandler) {
+    
     let urlString = basePath + "&p=\(page)&q=\(queryString)"
     print("urlString \(urlString)")
     guard let url = URL(string: urlString) else {
@@ -70,34 +72,6 @@ class MuseumApiClient {
     
     dataTask.resume()
     
-  }
-  
-  func fetchImage(urlString: String,
-                  completion: @escaping (Result<Data, DataResponseError>) -> Void) {
-
-    guard let url = URL(string: urlString) else {
-      completion(Result.failure(DataResponseError.invalidUrl))
-      return
-    }
-    
-    let dataTask = session.dataTask(with: url) { (data, response, error) in
-      guard let data = data else {
-        completion(Result.failure(DataResponseError.network))
-        return
-      }
-      
-      completion(.success(data))
-    }
-    
-    dataTask.resume()
-    
-    /*
-    DispatchQueue.global(qos: .background).async {
-      let url = URL(string: urlString)
-      let data = try? Data(contentsOf: url!)
-      completion(.success(data!))
-    }
-    */
   }
   
 }

@@ -8,11 +8,14 @@
 
 import Foundation
 
-final class ImageLoaderService {
+protocol ImageLoaderService {
+  typealias completionHandler = (Result<Data, DataResponseError>) -> Void
+  func fetchImage(with urlString: String, completion: @escaping completionHandler)
+}
+
+final class ImageLoaderServiceImpl: ImageLoaderService {
   
   private let session: URLSession = URLSession(configuration: .default)
-  
-  typealias completionHandler = (Result<Data, DataResponseError>) -> Void
   
   private var tasks = [URL: [completionHandler]]()
   

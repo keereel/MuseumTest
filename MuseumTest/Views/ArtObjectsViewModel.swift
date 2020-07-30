@@ -18,8 +18,9 @@ protocol ArtObjectsViewModelDelegate: AnyObject {
 final class ArtObjectsViewModel {
   
   private let queryString: String
-  private let apiClient: MuseumApiClient = MuseumApiClient()
-  private let imageLoader: ImageLoaderService = ImageLoaderService()
+  private let objectsPerPage = 10
+  private let apiClient: MuseumApiClient = MuseumApiClientImpl()
+  private let imageLoader: ImageLoaderService = ImageLoaderServiceImpl()
   
   private let pageEntityName: String = "PageManaged"
   private let artObjectEntityName: String = "ArtObjectManaged"
@@ -116,7 +117,9 @@ final class ArtObjectsViewModel {
     
     // save to persistent store
     let lastUpdatedDate = Date()
-    saveToPersistentStore(collectionResponse: collectionResponse, lastUpdatedDate: lastUpdatedDate)
+    DispatchQueue.main.async {
+      self.saveToPersistentStore(collectionResponse: collectionResponse, lastUpdatedDate: lastUpdatedDate)
+    }
     
     self.totalObjects = collectionResponse.count
     
@@ -173,7 +176,7 @@ final class ArtObjectsViewModel {
     
     // Taking from cache
     if let cachedImage = imageCache.object(forKey: NSString(string: webImage.guid)) {
-      //print("image for index \(index) fetched from cache: \(webImage.guid)")
+      print("image for index \(index) fetched from cache: \(webImage.guid)")
       completion(.success(cachedImage))
       return
     }
@@ -190,7 +193,7 @@ final class ArtObjectsViewModel {
     imageLoader.fetchImage(with: webImage.url) { [weak self] (result) in
       switch result {
       case .success(let data):
-        //print("image for index \(index) fetched from API: \(webImage.guid)")
+        print("image for index \(index) fetched from API: \(webImage.guid)")
         if let image = UIImage(data: data) {
           self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
           DispatchQueue.main.async {
@@ -232,7 +235,8 @@ final class ArtObjectsViewModel {
         return
     }
     createdImageManaged.guid = guid
-    createdImageManaged.image = image.jpegData(compressionQuality: 0.9)
+    //createdImageManaged.image = image.jpegData(compressionQuality: 0.9)
+    createdImageManaged.image = image.pngData()
     
     CoreDataStack.shared.saveContext()
   }
@@ -336,19 +340,19 @@ final class ArtObjectsViewModel {
     1
   }
   var lastPage: Int {
-    (totalObjects / apiClient.objectsPerPage) + firstPage
+    (totalObjects / objectsPerPage) + firstPage
   }
   
   func pageNumber(for indexPath: IndexPath) -> Int {
-    return (indexPath.row / apiClient.objectsPerPage) + firstPage
+    return (indexPath.row / objectsPerPage) + firstPage
   }
   
   func minIndex(onPage page: Int) -> Int {
-    return (page - firstPage) * self.apiClient.objectsPerPage
+    return (page - firstPage) * self.objectsPerPage
   }
   
   func maxIndex(onPage page: Int) -> Int {
-    return (page - firstPage + 1) * apiClient.objectsPerPage - 1
+    return (page - firstPage + 1) * objectsPerPage - 1
   }
   
 }
