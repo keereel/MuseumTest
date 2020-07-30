@@ -25,7 +25,7 @@ final class ArtObjectsViewController: UIViewController {
   }
   
   deinit {
-    print("VC DEINIT")
+    print("DEINIT VC")
   }
   
   required init?(coder aDecoder: NSCoder) {
@@ -104,6 +104,20 @@ extension ArtObjectsViewController: UITableViewDataSource {
     //let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! ArtObjectTableViewCell
     
     cell.configure(title: viewModel.objects[indexPath.row].title)
+    //showSpinner()
+    viewModel.fetchImage(index: indexPath.row) { (result) in
+      DispatchQueue.main.async {
+        switch result {
+        case .success(let image):
+          cell.setImage(image: image)
+          //hideSpinner()
+        case .failure(let error):
+          // TODO error
+          print("VC: image loading error: \(error.description)")
+          //hideSpinner()
+        }
+      }
+    }
     
     return cell
   }

@@ -28,6 +28,7 @@
 		B82EE65D24CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82EE65924CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift */; };
 		B82EE65F24CF3D8D00E999E8 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */; };
 		B87C1DB024D1E4D700730DDB /* WebImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DAF24D1E4D700730DDB /* WebImage.swift */; };
+		B87C1DB324D2AF0F00730DDB /* TextError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DB224D2AF0F00730DDB /* TextError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 		B82EE65924CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ArtObjectManaged+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		B87C1DAF24D1E4D700730DDB /* WebImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebImage.swift; sourceTree = "<group>"; };
+		B87C1DB224D2AF0F00730DDB /* TextError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,13 +72,10 @@
 		9880CBA124CDBE0200949E79 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				B82EE65624CF38F200E999E8 /* PageManaged+CoreDataClass.swift */,
-				B82EE65724CF38F200E999E8 /* PageManaged+CoreDataProperties.swift */,
-				B82EE65824CF38F200E999E8 /* ArtObjectManaged+CoreDataClass.swift */,
-				B82EE65924CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift */,
-				98E17F7A24CC387E00CC5493 /* MuseumTest.xcdatamodeld */,
+				B87C1DB124D2AED200730DDB /* CoreData */,
 				9880CBA524CDEC3D00949E79 /* ArtObject.swift */,
 				B87C1DAF24D1E4D700730DDB /* WebImage.swift */,
+				B87C1DB224D2AF0F00730DDB /* TextError.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -136,6 +135,18 @@
 				98E17F8224CC388300CC5493 /* Info.plist */,
 			);
 			path = MuseumTest;
+			sourceTree = "<group>";
+		};
+		B87C1DB124D2AED200730DDB /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
+				98E17F7A24CC387E00CC5493 /* MuseumTest.xcdatamodeld */,
+				B82EE65624CF38F200E999E8 /* PageManaged+CoreDataClass.swift */,
+				B82EE65724CF38F200E999E8 /* PageManaged+CoreDataProperties.swift */,
+				B82EE65824CF38F200E999E8 /* ArtObjectManaged+CoreDataClass.swift */,
+				B82EE65924CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift */,
+			);
+			path = CoreData;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -220,6 +231,7 @@
 				B82EE65B24CF38F200E999E8 /* PageManaged+CoreDataProperties.swift in Sources */,
 				98E17F7424CC387E00CC5493 /* SceneDelegate.swift in Sources */,
 				9880CBA624CDEC3D00949E79 /* ArtObject.swift in Sources */,
+				B87C1DB324D2AF0F00730DDB /* TextError.swift in Sources */,
 				B82EE65D24CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift in Sources */,
 				98890B7B24CC788C00A8A268 /* DataResponseError.swift in Sources */,
 				B82EE65F24CF3D8D00E999E8 /* CoreDataStack.swift in Sources */,

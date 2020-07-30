@@ -22,6 +22,10 @@ final class ArtObjectTableViewCell: UITableViewCell {
     super.init(coder: coder)
   }
   
+  deinit {
+    print("DEINIT cell")
+  }
+  
   override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
     super.init(style: style, reuseIdentifier: reuseIdentifier)
     
@@ -52,6 +56,13 @@ final class ArtObjectTableViewCell: UITableViewCell {
   
   func configure(title: String) {
     self.title.text = title
+    img.image = nil
+  }
+  
+  func setImage(image: UIImage?) {
+    if img.image == nil {
+      img.image = image
+    }
   }
   
 }

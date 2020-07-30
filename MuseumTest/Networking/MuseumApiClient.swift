@@ -34,6 +34,10 @@ class MuseumApiClient {
     self.session = session
   }
   
+  deinit {
+    print("DEINIT MuseumApiClient")
+  }
+  
   func fetchArtObjects(queryString: String,
                        page: Int = 0,
                        completion: @escaping (Result<CollectionResponse, DataResponseError>) -> Void) {
@@ -70,8 +74,37 @@ class MuseumApiClient {
   
   func fetchImage(urlString: String,
                   completion: @escaping (Result<Data, DataResponseError>) -> Void) {
+
+    /*
+    guard let url = URL(string: urlString) else {
+      completion(Result.failure(DataResponseError.query))
+      return
+    }
     
-    // TODO receive from api
+    let dataTask = session.dataTask(with: url) { (data, response, error) in
+      guard let data = data else {
+        completion(Result.failure(DataResponseError.network))
+        return
+      }
+      
+      completion(.success(data))
+    }
+    
+    dataTask.resume()
+    */
+    
+    DispatchQueue.global(qos: .background).async {
+      let url = URL(string: urlString)
+      let data = try? Data(contentsOf: url!)
+      completion(.success(data!))
+      /*
+       let image: UIImage = UIImage(data: data!)!
+       DispatchQueue.main.async {
+       self.imageCache.setObject(image, forKey: NSString(string:        (activeUser?.login!)!))
+       cell.imgFollow.image = image
+       }
+       */
+    }
     
   }
   

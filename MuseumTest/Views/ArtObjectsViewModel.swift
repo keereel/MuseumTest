@@ -32,10 +32,11 @@ final class ArtObjectsViewModel {
   var totalObjects = 0
   
   var objects: [ArtObject] = []
-  var images: [String: UIImage] = [:]
   var count: Int {
     objects.count
   }
+  private var images: [String: UIImage] = [:]
+  
   //let refreshInterval: Int = 300
   let refreshInterval: Int = 30
   
@@ -47,7 +48,7 @@ final class ArtObjectsViewModel {
   }
   
   deinit {
-    print("VM DEINIT")
+    print("DEINIT VM")
   }
   
   func fetch(page: Int) {
@@ -123,8 +124,36 @@ final class ArtObjectsViewModel {
     //}
   }
   
-  func fetchImage(index: Int, completion: @escaping () -> Void) {
-    // в комплишене будет просто либо приниматься картинка, а fetchImage вызывается из cellForRowAt
+  func fetchImage(index: Int, completion: @escaping (Result<UIImage?, TextError>) -> Void) {
+    guard index < count else {
+        completion(.failure(TextError("Unexpected error")))
+        return
+    }
+    guard let webImage = objects[index].webImage else {
+      completion(.success(nil))
+      return
+    }
+    
+    if let image = images[webImage.guid] {
+      print("image fetched from dict: \(webImage.url)")
+      completion(.success(image))
+      return
+    }
+    
+    //DispatchQueue.global().async { [weak self] in
+      apiClient.fetchImage(urlString: webImage.url) { [weak self] (result) in
+        switch result {
+        case .success(let data):
+          print("ok")
+          let image = UIImage(data: data)
+          self?.images[webImage.guid] = image
+          completion(.success(image))
+        case .failure(let error):
+          // TODO retry?
+          completion(.failure(TextError(error.description)))
+        }
+      }
+    //}
   }
   
   private func updateDataSourceAndUI(with artObjects: [ArtObject], forPageNumber page: Int) {
