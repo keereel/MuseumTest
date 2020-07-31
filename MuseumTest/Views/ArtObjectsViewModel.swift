@@ -28,6 +28,9 @@ final class ArtObjectsViewModel {
   private var context: NSManagedObjectContext {
     CoreDataStack.shared.persistentContainer.viewContext
   }
+  private var privateContext: NSManagedObjectContext {
+    CoreDataStack.shared.privateContext
+  }
   
   private weak var delegate: ArtObjectsViewModelDelegate?
   
@@ -38,6 +41,7 @@ final class ArtObjectsViewModel {
     objects.count
   }
   let imageCache = NSCache<NSString, UIImage>()
+  private let objectsWritingQueue = DispatchQueue(label: "ArtObjectsViewModel.objectsWritingQueue", attributes: .concurrent)
   
   //let refreshInterval: Int = 300
   let refreshInterval: Int = 30
@@ -143,13 +147,16 @@ final class ArtObjectsViewModel {
     // update dataSource
     let firstIndexOnPage = minIndex(onPage: page)
     let lastIndexOnPage = firstIndexOnPage + artObjects.count - 1
-    for index in firstIndexOnPage...lastIndexOnPage {
-      if self.objects.count - 1 < index {
-        self.objects.append(artObjects[index-firstIndexOnPage])
-      } else {
-        self.objects[index] = artObjects[index-firstIndexOnPage]
+    objectsWritingQueue.sync(flags: .barrier) {
+      for index in firstIndexOnPage...lastIndexOnPage {
+        if self.objects.count - 1 < index {
+          self.objects.append(artObjects[index-firstIndexOnPage])
+        } else {
+          self.objects[index] = artObjects[index-firstIndexOnPage]
+        }
       }
     }
+
     
     // update UI
     var indexPaths: [IndexPath] = []
@@ -181,6 +188,7 @@ final class ArtObjectsViewModel {
       return
     }
     
+    /*
     // Fetching from persistent store
     if let image = fetchImageFromPersistentStore(guid: webImage.guid) {
       print("image for index \(index) fetched from CoreData: \(webImage.guid)")
@@ -188,17 +196,20 @@ final class ArtObjectsViewModel {
       completion(.success(image))
       return
     }
+    */
     
     // Fetching from API
+    print("image for index \(index) TO fetch from API: \(webImage.guid)")
     imageLoader.fetchImage(with: webImage.url) { [weak self] (result) in
       switch result {
       case .success(let data):
         print("image for index \(index) fetched from API: \(webImage.guid)")
         if let image = UIImage(data: data) {
           self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
-          DispatchQueue.main.async {
-            self?.saveToPersistentStore(image: image, with: webImage.guid)
-          }
+          //DispatchQueue.main.async {
+            //self?.saveToPersistentStore(image: image, with: webImage.guid)
+          //}
+          //self?.saveToPersistentStore(image: image, with: webImage.guid)
           completion(.success(image))
         } else {
           completion(.failure(TextError("Invalid image data")))
@@ -209,6 +220,7 @@ final class ArtObjectsViewModel {
       }
     }
   }
+  
   
   private func fetchImageFromPersistentStore(guid: String) -> UIImage? {
     let fetchRequest: NSFetchRequest<ImageManaged> = NSFetchRequest(entityName: imageEntityName)
@@ -229,17 +241,70 @@ final class ArtObjectsViewModel {
     }
   }
   
+  /*
   private func saveToPersistentStore(image: UIImage, with guid: String) {
     guard let entityDescription = NSEntityDescription.entity(forEntityName: imageEntityName, in: context),
       let createdImageManaged = NSManagedObject(entity: entityDescription, insertInto: context) as? ImageManaged else {
         return
     }
     createdImageManaged.guid = guid
-    //createdImageManaged.image = image.jpegData(compressionQuality: 0.9)
-    createdImageManaged.image = image.pngData()
+    createdImageManaged.image = image.jpegData(compressionQuality: 0.9)
+    //createdImageManaged.image = image.pngData()
     
     CoreDataStack.shared.saveContext()
   }
+  */
+  
+  /*
+  private func fetchImageFromPersistentStore(guid: String) -> UIImage? {
+    
+    let privateContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    
+    privateContext.performAndWait {
+      
+      let fetchRequest: NSFetchRequest<ImageManaged> = NSFetchRequest(entityName: imageEntityName)
+      let predicate = NSPredicate(format: "guid == %@", guid)
+      fetchRequest.predicate = predicate
+      
+      do {
+        let result = try context.fetch(fetchRequest)
+        guard let imageManaged = result.first,
+          let imageData = imageManaged.image,
+          let image = UIImage(data: imageData)
+          else {
+            return nil
+        }
+        return image
+      } catch {
+        return nil
+      }
+      
+    }
+  }
+  */
+  
+  private func saveToPersistentStore(image: UIImage, with guid: String) {
+    //let privateContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    
+    privateContext.perform {
+      guard let entityDescription = NSEntityDescription.entity(forEntityName: self.imageEntityName, in: self.privateContext),
+        let createdImageManaged = NSManagedObject(entity: entityDescription, insertInto: self.privateContext) as? ImageManaged else {
+          return
+      }
+      createdImageManaged.guid = guid
+      createdImageManaged.image = image.jpegData(compressionQuality: 0.9)
+      
+      if self.privateContext.hasChanges {
+        do {
+          try self.privateContext.save()
+        } catch {
+          print("ERROR: privateContext save: \(error)")
+        }
+      }
+    }
+
+  }
+  
   
   // MARK: CoreData
   

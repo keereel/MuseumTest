@@ -13,6 +13,7 @@ final class ArtObjectTableViewCell: UITableViewCell {
   
   private var img: UIImageView = UIImageView()
   private var title: UILabel = UILabel()
+  var cellIndex: Int = 0
   
   private let imgSize: CGFloat = 150
   private let contentOffsetX: CGFloat = 20
@@ -56,8 +57,9 @@ final class ArtObjectTableViewCell: UITableViewCell {
     title.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
   }
   
-  func configure(title: String) {
+  func configure(title: String, cellIndex: Int) {
     self.title.text = title
+    self.cellIndex = cellIndex
     img.image = nil
   }
   

@@ -91,10 +91,17 @@ extension ArtObjectsViewController: UITableViewDataSource {
       return UITableViewCell()
     }
     
-    cell.configure(title: viewModel.objects[indexPath.row].title)
+    cell.configure(title: viewModel.objects[indexPath.row].title, cellIndex: indexPath.row)
     print("VC: cellForRowAt:\(indexPath.row)")
+    
     viewModel.fetchImage(index: indexPath.row) { (result) in
-      //DispatchQueue.main.async {
+      
+      guard cell.cellIndex == indexPath.row else {
+        print("VC: CELL cellIndex = \(cell.cellIndex) indexPath.row = \(indexPath.row)")
+        return
+      }
+      
+      DispatchQueue.main.async {
         switch result {
         case .success(let image):
           cell.setImage(image: image)
@@ -103,8 +110,9 @@ extension ArtObjectsViewController: UITableViewDataSource {
           // TODO error
           print("VC: image loading error: \(error.description)")
         }
-      //}
+      }
     }
+    
     
     return cell
   }

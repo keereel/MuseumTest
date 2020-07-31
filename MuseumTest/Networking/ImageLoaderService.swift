@@ -19,37 +19,51 @@ final class ImageLoaderServiceImpl: ImageLoaderService {
   
   private var tasks = [URL: [completionHandler]]()
   
+  private let writingQueue = DispatchQueue(label: "ImageLoaderServiceImpl.tasks.writingQueue",
+                                           attributes: .concurrent)
+  
+  deinit {
+    print("DEINIT ImageLoaderService")
+  }
+  
   func fetchImage(with urlString: String, completion: @escaping completionHandler) {
     guard let url = URL(string: urlString) else {
       completion(Result.failure(DataResponseError.invalidUrl))
       return
     }
     
-    if tasks.keys.contains(url) {
-      tasks[url]?.append(completion)
-    } else {
-      tasks[url] = [completion]
-      let dataTask = session.dataTask(with: url, completionHandler: { [weak self] (data, response, error) in
-        DispatchQueue.main.async {
-          
+    writingQueue.async(flags: .barrier) {
+      
+      if self.tasks.keys.contains(url) {
+        print("cnt \(self.tasks[url]!)")
+        self.tasks[url]?.append(completion)
+      } else {
+        self.tasks[url] = [completion]
+        let dataTask = self.session.dataTask(with: url, completionHandler: { [weak self] (data, response, error) in
           guard let completionHandlers = self?.tasks[url] else {
             return
           }
           guard let data = data else {
+            print("ERROR imageLoaderService \(urlString) count \(completionHandlers.count)")
             for completionHandler in completionHandlers {
               completionHandler(Result.failure(DataResponseError.network))
             }
             return
           }
           
+          print("imageLoaderService \(urlString) count \(completionHandlers.count)")
           for completionHandler in completionHandlers {
             completionHandler(.success(data))
           }
           
-        }
-      })
-      dataTask.resume()
-    }
+          self?.tasks[url] = nil
+          
+        })
+        dataTask.resume()
+      }
+      
+    } // disp
+    
   }
   
 }
