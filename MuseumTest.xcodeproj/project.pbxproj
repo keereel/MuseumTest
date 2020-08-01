@@ -130,11 +130,11 @@
 		98E17F7024CC387E00CC5493 /* MuseumTest */ = {
 			isa = PBXGroup;
 			children = (
+				B86E1B3724D5909F00CE95DE /* PersistentStore */,
 				9880CBA424CDEB3900949E79 /* Views */,
 				9880CBA124CDBE0200949E79 /* Models */,
 				98890B7E24CC7EE600A8A268 /* Networking */,
 				98E17F7124CC387E00CC5493 /* AppDelegate.swift */,
-				B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */,
 				98E17F7324CC387E00CC5493 /* SceneDelegate.swift */,
 				98E17F7724CC387E00CC5493 /* Main.storyboard */,
 				98E17F7D24CC388300CC5493 /* Assets.xcassets */,
@@ -142,6 +142,14 @@
 				98E17F8224CC388300CC5493 /* Info.plist */,
 			);
 			path = MuseumTest;
+			sourceTree = "<group>";
+		};
+		B86E1B3724D5909F00CE95DE /* PersistentStore */ = {
+			isa = PBXGroup;
+			children = (
+				B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */,
+			);
+			path = PersistentStore;
 			sourceTree = "<group>";
 		};
 		B87C1DB124D2AED200730DDB /* CoreData */ = {

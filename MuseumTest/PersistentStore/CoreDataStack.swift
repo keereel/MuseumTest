@@ -13,14 +13,12 @@ final class CoreDataStack {
   
   static let shared: CoreDataStack = CoreDataStack()
   
-  // MARK: - Core Data stack
-  
   lazy var privateContext: NSManagedObjectContext = {
     let managedObjectContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
     managedObjectContext.persistentStoreCoordinator = persistentContainer.persistentStoreCoordinator
     return managedObjectContext
   }()
-
+  
   lazy var persistentContainer: NSPersistentContainer = {
       /*
        The persistent container for the application. This implementation

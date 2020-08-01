@@ -17,8 +17,8 @@ final class ImageLoaderServiceImpl: ImageLoaderService {
   
   private let session: URLSession = URLSession(configuration: .default)
   
-  private var tasks = [URL: [completionHandler]]()
-  //private var tasks: [URL: completionHandler] = [:]
+  private var tasksWithArray = [URL: [completionHandler]]()
+  private var tasks: [URL: completionHandler] = [:]
   
   private let tasksQueue = DispatchQueue(label: "ImageLoaderServiceImpl.tasks",
                                            attributes: .concurrent)
@@ -28,6 +28,7 @@ final class ImageLoaderServiceImpl: ImageLoaderService {
   }
   
   
+  // with one task for each url
   func fetchImage(with urlString: String, completion: @escaping completionHandler) {
     guard let url = URL(string: urlString) else {
       completion(Result.failure(DataResponseError.invalidUrl))
@@ -37,15 +38,61 @@ final class ImageLoaderServiceImpl: ImageLoaderService {
     tasksQueue.async(flags: .barrier) {
       
       if self.tasks.keys.contains(url) {
-        print("cnt1 \(self.tasks[url]!)")
+        //print("cnt1 \(self.tasks[url]!)")
         //
-        self.tasks[url]?.append(completion)
+        self.tasks[url] = completion
       } else {
-        self.tasks[url] = [completion]
+        self.tasks[url] = completion
         let dataTask = self.session.dataTask(with: url, completionHandler: { [weak self] (data, response, error) in
           self?.tasksQueue.async(flags: .barrier) {
-            print("cnt2 \(self?.tasks[url]!)")
+            //print("cnt2 \(self?.tasks[url]!)")
             guard let completionHandlers = self?.tasks[url] else {
+              return
+            }
+            guard let data = data else {
+              print("ERROR imageLoaderService \(urlString)")
+              //for completionHandler in completionHandlers {
+                completion(Result.failure(DataResponseError.network))
+              //}
+              return
+            }
+            
+            // perform all handlers related with this image
+            //print("imageLoaderService \(urlString)")
+            //for completionHandler in completionHandlers {
+              completion(.success(data))
+            //}
+            
+            // remove loaded image and its handlers from tasks
+            self?.tasks[url] = nil
+          }
+        })
+        dataTask.resume()
+      }
+      
+    } // tasksQueue
+    
+  }
+  
+  // with array of tasks for each url
+  func _fetchImage(with urlString: String, completion: @escaping completionHandler) {
+    guard let url = URL(string: urlString) else {
+      completion(Result.failure(DataResponseError.invalidUrl))
+      return
+    }
+    
+    tasksQueue.async(flags: .barrier) {
+      
+      if self.tasksWithArray.keys.contains(url) {
+        print("cnt1 \(self.tasksWithArray[url]!)")
+        //
+        self.tasksWithArray[url]?.append(completion)
+      } else {
+        self.tasksWithArray[url] = [completion]
+        let dataTask = self.session.dataTask(with: url, completionHandler: { [weak self] (data, response, error) in
+          self?.tasksQueue.async(flags: .barrier) {
+            print("cnt2 \(self?.tasksWithArray[url]!)")
+            guard let completionHandlers = self?.tasksWithArray[url] else {
               return
             }
             guard let data = data else {
@@ -63,7 +110,7 @@ final class ImageLoaderServiceImpl: ImageLoaderService {
             }
             
             // remove loaded image and its handlers from tasks
-            self?.tasks[url] = nil
+            self?.tasksWithArray[url] = nil
           }
         })
         dataTask.resume()

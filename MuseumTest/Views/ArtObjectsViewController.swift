@@ -92,9 +92,12 @@ extension ArtObjectsViewController: UITableViewDataSource {
     }
     
     cell.configure(title: viewModel.objects[indexPath.row].title, cellIndex: indexPath.row)
-    print("VC: cellForRowAt:\(indexPath.row)")
+    //print("VC: cellForRowAt:\(indexPath.row)")
+    print("VC: will fetch an image for cellIndex :\(indexPath.row)")
     
     viewModel.fetchImage(index: indexPath.row) { (result) in
+      /*
+      // v1
       // This guard is needed to avoid show image inappropriate for this cell, which can occurs due to reuse of cells
       guard cell.cellIndex == indexPath.row else {
         print("VC: CELL cellIndex = \(cell.cellIndex) indexPath.row = \(indexPath.row)")
@@ -110,8 +113,31 @@ extension ArtObjectsViewController: UITableViewDataSource {
           print("VC: image loading error: \(error.description)")
         }
       }
+      */
+      // v2
+      DispatchQueue.main.async {
+        var cellToSetImage = cell
+        if cellToSetImage.cellIndex != indexPath.row {
+          print("VC: CELL cellIndex = \(cellToSetImage.cellIndex) indexPath.row = \(indexPath.row)")
+          let indexPathForCellToSetImage = IndexPath(row: indexPath.row, section: 0)
+          guard let tmpcell = tableView.cellForRow(at: indexPathForCellToSetImage) as? ArtObjectTableViewCell else {
+            return
+          }
+          cellToSetImage = tmpcell
+          print("VC: tmpcell.cellindex = \(tmpcell.cellIndex)")
+        }
+        
+        switch result {
+        case .success(let image):
+          cellToSetImage.setImage(image: image)
+          print("VC: cellForRowAt:\(indexPath.row) image set")
+        case .failure(let error):
+          // TODO error
+          print("VC: image loading error: \(error.description)")
+        }
+      }
+      
     }
-    
     
     return cell
   }

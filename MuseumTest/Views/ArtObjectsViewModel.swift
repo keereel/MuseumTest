@@ -95,10 +95,17 @@ final class ArtObjectsViewModel {
       print("fetched: page \(page) from CoreData")
       let artObjects = artObjectsManaged.compactMap { artObject(with: $0) }
       // TODO debug mofifier, remove it
+      /*
       let loadedObjects = artObjects.map {
         ArtObject(title: "CD \(page): \($0.objectNumber) \($0.title)",
           objectNumber: $0.objectNumber,
           webImage: $0.webImage)
+      }
+      */
+      let loadedObjects = artObjects.enumerated().map {
+        ArtObject(title: "CD \(page): \((page-1)*objectsPerPage+$0) \($1.objectNumber) \($1.title)",
+          objectNumber: $1.objectNumber,
+          webImage: $1.webImage)
       }
       //
       pagesAlreadyInDataSource[page] = lastRefreshed
@@ -125,10 +132,17 @@ final class ArtObjectsViewModel {
       return
     }
     // TODO debug mofifier, remove it
+    /*
     let loadedObjects = collectionResponse.artObjects.map {
       ArtObject(title: "API \(page): \($0.objectNumber) \($0.title)",
         objectNumber: $0.objectNumber,
         webImage: $0.webImage)
+    }
+    */
+    let loadedObjects = collectionResponse.artObjects.enumerated().map {
+      ArtObject(title: "API \(page): \((page-1)*objectsPerPage+$0) \($1.objectNumber) \($1.title)",
+        objectNumber: $1.objectNumber,
+        webImage: $1.webImage)
     }
     //loadedObjects.forEach { print("\($0.webImage?.url)") }
     //
