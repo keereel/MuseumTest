@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import CoreData
 import UIKit
 
 protocol ArtObjectsViewModelDelegate: AnyObject {
@@ -19,18 +18,10 @@ final class ArtObjectsViewModel {
   
   private let queryString: String
   private let objectsPerPage = 10
+  
   private let apiClient: MuseumApiClient = MuseumApiClientImpl()
   private let imageLoader: ImageLoaderService = ImageLoaderServiceImpl()
-  
-  private let pageEntityName: String = "PageManaged"
-  private let artObjectEntityName: String = "ArtObjectManaged"
-  private let imageEntityName: String = "ImageManaged"
-  private var context: NSManagedObjectContext {
-    CoreDataStack.shared.persistentContainer.viewContext
-  }
-  private var privateContext: NSManagedObjectContext {
-    CoreDataStack.shared.privateContext
-  }
+  private let persistentStore: CoreDataService = CoreDataService()
   
   private weak var delegate: ArtObjectsViewModelDelegate?
   
@@ -74,13 +65,31 @@ final class ArtObjectsViewModel {
     }
     
     // Then try to fetch from persistent store
-    if let pageManaged = fetchFromPersistentStore(page: page),
+    if let fetchResult = persistentStore.fetch(page: page,
+                                              queryString: queryString,
+                                              secondsToExpire: refreshInterval) {
+      // TODO debug mofifier, remove it
+      let loadedObjects = fetchResult.artObjects.enumerated().map {
+        ArtObject(title: "CD \(page): \((page-1)*objectsPerPage+$0) \($1.objectNumber) \($1.title)",
+          objectNumber: $1.objectNumber,
+          webImage: $1.webImage)
+      }
+      //
+      pagesAlreadyInDataSource[page] = fetchResult.lastRefresh
+      updateDataSourceAndUI(with: loadedObjects, forPageNumber: page)
+      
+      return
+    }
+    
+    /*
+    // Then try to fetch from persistent store
+    if let pageManaged = persistentStore.fetchFromPersistentStore(queryString: queryString, page: page),
       let lastRefreshed = pageManaged.refreshDate,
       Date() < lastRefreshed.addingTimeInterval(TimeInterval(refreshInterval)),
       let artObjectsManaged = pageManaged.artObjects?.array as? [ArtObjectManaged] {
       
       print("fetched: page \(page) from CoreData")
-      let artObjects = artObjectsManaged.compactMap { artObject(with: $0) }
+      let artObjects = artObjectsManaged.compactMap { persistentStore.artObject(with: $0) }
       // TODO debug mofifier, remove it
       /*
       let loadedObjects = artObjects.map {
@@ -100,6 +109,7 @@ final class ArtObjectsViewModel {
       
       return
     }
+    */
     
     // And then fetch from server
     apiClient.fetchArtObjects(queryString: queryString, page: page) { (result) in
@@ -119,13 +129,6 @@ final class ArtObjectsViewModel {
       return
     }
     // TODO debug mofifier, remove it
-    /*
-    let loadedObjects = collectionResponse.artObjects.map {
-      ArtObject(title: "API \(page): \($0.objectNumber) \($0.title)",
-        objectNumber: $0.objectNumber,
-        webImage: $0.webImage)
-    }
-    */
     let loadedObjects = collectionResponse.artObjects.enumerated().map {
       ArtObject(title: "API \(page): \((page-1)*objectsPerPage+$0) \($1.objectNumber) \($1.title)",
         objectNumber: $1.objectNumber,
@@ -137,7 +140,7 @@ final class ArtObjectsViewModel {
     // save to persistent store
     let lastUpdatedDate = Date()
     DispatchQueue.main.async {
-      self.saveToPersistentStore(collectionResponse: collectionResponse, lastUpdatedDate: lastUpdatedDate)
+      self.persistentStore.save(queryString: self.queryString, collectionResponse: collectionResponse, lastUpdatedDate: lastUpdatedDate)
     }
     
     self.totalObjects = collectionResponse.count
@@ -238,29 +241,7 @@ final class ArtObjectsViewModel {
     }
   
   }
-  
-  private func fetchImageFromPersistentStore(guid: String, completion: @escaping (UIImage?) -> Void) {
-    privateContext.perform {
-      let fetchRequest: NSFetchRequest<ImageManaged> = NSFetchRequest(entityName: self.imageEntityName)
-      let predicate = NSPredicate(format: "guid == %@", guid)
-      fetchRequest.predicate = predicate
-      
-      do {
-        let result = try self.privateContext.fetch(fetchRequest)
-        if let imageManaged = result.first,
-          let imageData = imageManaged.image,
-          let image = UIImage(data: imageData) {
-            completion(image)
-        }
-        completion(nil)
-      } catch {
-        print("ERROR: context load image: \(error)")
-        completion(nil)
-      }
-    }
-  }
   */
-  
   
   func fetchImage(index: Int, completion: @escaping (Result<UIImage?, TextError>) -> Void) {
     guard index < count else {
@@ -280,7 +261,7 @@ final class ArtObjectsViewModel {
     }
     
     // Fetching from persistent store
-    if let image = fetchImageFromPersistentStore(guid: webImage.guid) {
+    if let image = persistentStore.fetchImage(guid: webImage.guid) {
       print("image for index \(index) fetched from CoreData: \(webImage.guid)")
       imageCache.setObject(image, forKey: NSString(string: webImage.guid))
       completion(.success(image))
@@ -295,7 +276,7 @@ final class ArtObjectsViewModel {
         print("image for index \(index) fetched from API: \(webImage.guid)")
         if let image = UIImage(data: data) {
           self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
-          self?.saveToPersistentStore(image: image, with: webImage.guid)
+          self?.persistentStore.save(image: image, with: webImage.guid)
           completion(.success(image))
         } else {
           completion(.failure(TextError("Invalid image data")))
@@ -307,136 +288,6 @@ final class ArtObjectsViewModel {
     }
   }
   
-  private func fetchImageFromPersistentStore(guid: String) -> UIImage? {
-    var img: UIImage? = nil
-    
-    context.performAndWait {
-      let fetchRequest: NSFetchRequest<ImageManaged> = NSFetchRequest(entityName: imageEntityName)
-      let predicate = NSPredicate(format: "guid == %@", guid)
-      fetchRequest.predicate = predicate
-      
-      do {
-        let result = try context.fetch(fetchRequest)
-        if let imageManaged = result.first,
-          let imageData = imageManaged.image,
-          let image = UIImage(data: imageData) {
-            img = image
-        }
-      } catch {
-        print("ERROR: context load image: \(error)")
-      }
-    }
-    
-    return img
-  }
- 
-  private func saveToPersistentStore(image: UIImage, with guid: String) {
-    privateContext.perform {
-      guard let entityDescription = NSEntityDescription.entity(forEntityName: self.imageEntityName, in: self.privateContext),
-        let createdImageManaged = NSManagedObject(entity: entityDescription, insertInto: self.privateContext) as? ImageManaged else {
-          return
-      }
-      createdImageManaged.guid = guid
-      createdImageManaged.image = image.jpegData(compressionQuality: 0.9)
-      
-      if self.privateContext.hasChanges {
-        do {
-          try self.privateContext.save()
-        } catch {
-          print("ERROR: privateContext save image: \(error)")
-        }
-      }
-    }
-  }
-  
-  
-  // MARK: CoreData
-  
-  private func fetchFromPersistentStore(page: Int) -> PageManaged? {
-    let fetchRequest: NSFetchRequest<PageManaged> = NSFetchRequest(entityName: pageEntityName)
-    let pagePredicate = NSPredicate(format: "page == %i", page)
-    let queryStringPredicate = NSPredicate(format: "queryString == %@", queryString)
-    let compound = NSCompoundPredicate(type: .and, subpredicates: [pagePredicate, queryStringPredicate])
-    fetchRequest.predicate = compound
-    
-    do {
-      let result = try context.fetch(fetchRequest)
-      return result.first
-    } catch {
-      return nil
-    }
-  }
-  
-  
-  private func saveToPersistentStore(collectionResponse: CollectionResponse, lastUpdatedDate: Date) {
-    guard let pageNumber = collectionResponse.pageNumber else {
-      return
-    }
-    
-    if let pageManaged = fetchFromPersistentStore(page: pageNumber) {
-    // update page
-      pageManaged.queryString = queryString
-      pageManaged.page = Int16(pageNumber)
-      pageManaged.refreshDate = lastUpdatedDate
-      
-      pageManaged.artObjects?.forEach {
-          guard let artObjectManaged = $0 as? ArtObjectManaged else { return }
-          context.delete(artObjectManaged)
-      }
-      createArtObjectsManaged(with: collectionResponse.artObjects, forPage: pageManaged)
-      
-      print("saveToPersistentStore update")
-    
-    } else {
-    // create page
-      guard let entityDescription = NSEntityDescription.entity(forEntityName: pageEntityName, in: context),
-        let createdPageManaged = NSManagedObject(entity: entityDescription, insertInto: context) as? PageManaged else {
-          return
-      }
-      createdPageManaged.queryString = queryString
-      createdPageManaged.page = Int16(pageNumber)
-      createdPageManaged.refreshDate = lastUpdatedDate
-      
-      createArtObjectsManaged(with: collectionResponse.artObjects, forPage: createdPageManaged)
-      
-      print("saveToPersistentStore created")
-    
-    }
-  
-    CoreDataStack.shared.saveContext()
-  }
-  
-  private func createArtObjectsManaged(with artObjects: [ArtObject], forPage pageManaged: PageManaged) {
-    for artObject in artObjects {
-      if let entityDescription = NSEntityDescription.entity(forEntityName: artObjectEntityName, in: context),
-        let createdArtObjectManaged = NSManagedObject(entity: entityDescription, insertInto: context) as? ArtObjectManaged {
-        
-        createdArtObjectManaged.title = artObject.title
-        createdArtObjectManaged.objectNumber = artObject.objectNumber
-        createdArtObjectManaged.page = pageManaged
-        if let webImage = artObject.webImage {
-          createdArtObjectManaged.imageGuid = webImage.guid
-          createdArtObjectManaged.imageUrl = webImage.url
-        }
-        
-      }
-    }
-  }
-  
-  func artObject(with artObjectManaged: ArtObjectManaged) -> ArtObject? {
-    guard let title = artObjectManaged.title,
-      let objectNumber = artObjectManaged.objectNumber else {
-        return nil
-    }
-    
-    var webImage: WebImage?
-    if let imageGuid = artObjectManaged.imageGuid,
-      let imageUrl = artObjectManaged.imageUrl {
-      webImage = WebImage(guid: imageGuid, url: imageUrl)
-    }
-    return ArtObject(title: title, objectNumber: objectNumber, webImage: webImage)
-  }
-
   
   // MARK: Helpers
   
