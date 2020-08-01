@@ -93,7 +93,7 @@ extension ArtObjectsViewController: UITableViewDataSource {
     
     cell.configure(title: viewModel.objects[indexPath.row].title, cellIndex: indexPath.row)
     //print("VC: cellForRowAt:\(indexPath.row)")
-    print("VC: will fetch an image for cellIndex :\(indexPath.row)")
+    print("VC: will fetch an image for cellIndex \(indexPath.row)")
     
     viewModel.fetchImage(index: indexPath.row) { (result) in
       /*
@@ -130,7 +130,7 @@ extension ArtObjectsViewController: UITableViewDataSource {
         switch result {
         case .success(let image):
           cellToSetImage.setImage(image: image)
-          print("VC: cellForRowAt:\(indexPath.row) image set")
+          print("VC: cellForRowAt: \(indexPath.row) image set")
         case .failure(let error):
           // TODO error
           print("VC: image loading error: \(error.description)")

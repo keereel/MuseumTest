@@ -41,19 +41,6 @@ final class ArtObjectsViewModel {
     objects.count
   }
   let imageCache = NSCache<NSString, UIImage>()
-  
-  //let imgCache: [String: UIImage] = [:]
-  //private let imgCacheQueue = DispatchQueue(label: "imgCacheQueue", attributes: .concurrent)
-  /*
-  func readFromCache(guid: String) -> UIImage {
-    imgCacheQueue.sync(flags: .barrier) {
-      return nil
-    }
-  }
-  func writeToCache(guid: String, img: UIImage) {
-    
-  }
-  */
  
   private let objectsWritingQueue = DispatchQueue(label: "ArtObjectsViewModel.objectsWritingQueue", attributes: .concurrent)
   
@@ -216,7 +203,6 @@ final class ArtObjectsViewModel {
       return
     }
     
-    /*
     // Fetching from persistent store
     if let image = fetchImageFromPersistentStore(guid: webImage.guid) {
       print("image for index \(index) fetched from CoreData: \(webImage.guid)")
@@ -224,7 +210,6 @@ final class ArtObjectsViewModel {
       completion(.success(image))
       return
     }
-    */
     
     // Fetching from API
     print("image for index \(index) TO fetch from API: \(webImage.guid)")
@@ -237,7 +222,7 @@ final class ArtObjectsViewModel {
           //DispatchQueue.main.async {
             //self?.saveToPersistentStore(image: image, with: webImage.guid)
           //}
-          //self?.saveToPersistentStore(image: image, with: webImage.guid)
+          self?.saveToPersistentStore(image: image, with: webImage.guid)
           completion(.success(image))
         } else {
           completion(.failure(TextError("Invalid image data")))
@@ -249,7 +234,7 @@ final class ArtObjectsViewModel {
     }
   }
   
-  
+  /*
   private func fetchImageFromPersistentStore(guid: String) -> UIImage? {
     let fetchRequest: NSFetchRequest<ImageManaged> = NSFetchRequest(entityName: imageEntityName)
     let predicate = NSPredicate(format: "guid == %@", guid)
@@ -268,6 +253,7 @@ final class ArtObjectsViewModel {
       return nil
     }
   }
+  */
   
   /*
   private func saveToPersistentStore(image: UIImage, with guid: String) {
@@ -283,37 +269,30 @@ final class ArtObjectsViewModel {
   }
   */
   
-  /*
   private func fetchImageFromPersistentStore(guid: String) -> UIImage? {
+    var img: UIImage? = nil
     
-    let privateContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-    
-    privateContext.performAndWait {
-      
+    context.performAndWait {
       let fetchRequest: NSFetchRequest<ImageManaged> = NSFetchRequest(entityName: imageEntityName)
       let predicate = NSPredicate(format: "guid == %@", guid)
       fetchRequest.predicate = predicate
       
       do {
         let result = try context.fetch(fetchRequest)
-        guard let imageManaged = result.first,
+        if let imageManaged = result.first,
           let imageData = imageManaged.image,
-          let image = UIImage(data: imageData)
-          else {
-            return nil
+          let image = UIImage(data: imageData) {
+            img = image
         }
-        return image
       } catch {
-        return nil
+        print("ERROR: context load image: \(error)")
       }
-      
     }
+    
+    return img
   }
-  */
   
   private func saveToPersistentStore(image: UIImage, with guid: String) {
-    //let privateContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-    
     privateContext.perform {
       guard let entityDescription = NSEntityDescription.entity(forEntityName: self.imageEntityName, in: self.privateContext),
         let createdImageManaged = NSManagedObject(entity: entityDescription, insertInto: self.privateContext) as? ImageManaged else {
@@ -326,11 +305,10 @@ final class ArtObjectsViewModel {
         do {
           try self.privateContext.save()
         } catch {
-          print("ERROR: privateContext save: \(error)")
+          print("ERROR: privateContext save image: \(error)")
         }
       }
     }
-
   }
   
   
