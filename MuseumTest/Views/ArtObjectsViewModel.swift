@@ -31,18 +31,27 @@ final class ArtObjectsViewModel {
   var count: Int {
     objects.count
   }
-  let imageCache = NSCache<NSString, UIImage>()
+  private let imageCache = NSCache<NSString, UIImage>()
+  private var pagesAlreadyInDataSource: [Int: Date] = [:]
  
   private let objectsWritingQueue = DispatchQueue(label: "ArtObjectsViewModel.objectsWritingQueue", attributes: .concurrent)
   
   //let refreshInterval: Int = 300
   let refreshInterval: Int = 30
   
-  private var pagesAlreadyInDataSource: [Int: Date] = [:]
   
   init(queryString: String, delegate: ArtObjectsViewModelDelegate) {
     self.queryString = queryString
     self.delegate = delegate
+    
+    // TODO on network problems....
+    /*
+    NotificationCenter.default.addObserver(
+        self,
+        selector: #selector(onInternetConnectionChanged(_:)),
+        name: .reachabilityChanged,
+        object: connectionService)
+    */
   }
   
   deinit {
@@ -188,6 +197,7 @@ final class ArtObjectsViewModel {
   
   
   // MARK: Fetch images
+  
   // fetching images in privateContext - performance is the same as when fetching images in viewContext
   /*
   func fetchImage(index: Int, completion: @escaping (Result<UIImage?, TextError>) -> Void) {

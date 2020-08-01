@@ -28,6 +28,7 @@
 		B82EE65D24CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82EE65924CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift */; };
 		B82EE65F24CF3D8D00E999E8 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */; };
 		B8517C3B24D5E6230028E350 /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8517C3A24D5E6230028E350 /* CoreDataService.swift */; };
+		B8517C3D24D5F80F0028E350 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8517C3C24D5F80F0028E350 /* Reachability.swift */; };
 		B87C1DB024D1E4D700730DDB /* WebImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DAF24D1E4D700730DDB /* WebImage.swift */; };
 		B87C1DB324D2AF0F00730DDB /* TextError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DB224D2AF0F00730DDB /* TextError.swift */; };
 		B87C1DB524D2E61800730DDB /* ImageLoaderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87C1DB424D2E61800730DDB /* ImageLoaderService.swift */; };
@@ -59,6 +60,7 @@
 		B82EE65924CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ArtObjectManaged+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B82EE65E24CF3D8D00E999E8 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		B8517C3A24D5E6230028E350 /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
+		B8517C3C24D5F80F0028E350 /* Reachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		B87C1DAF24D1E4D700730DDB /* WebImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebImage.swift; sourceTree = "<group>"; };
 		B87C1DB224D2AF0F00730DDB /* TextError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextError.swift; sourceTree = "<group>"; };
 		B87C1DB424D2E61800730DDB /* ImageLoaderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoaderService.swift; sourceTree = "<group>"; };
@@ -107,6 +109,7 @@
 				98890B7C24CC7E3900A8A268 /* HTTPURLResponse+successStatusCode.swift */,
 				98890B7624CC5DE400A8A268 /* MuseumApiClient.swift */,
 				B87C1DB424D2E61800730DDB /* ImageLoaderService.swift */,
+				B8517C3C24D5F80F0028E350 /* Reachability.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -254,6 +257,7 @@
 				B87C1DB824D343A700730DDB /* ImageManaged+CoreDataClass.swift in Sources */,
 				9880CBA624CDEC3D00949E79 /* ArtObject.swift in Sources */,
 				B87C1DB324D2AF0F00730DDB /* TextError.swift in Sources */,
+				B8517C3D24D5F80F0028E350 /* Reachability.swift in Sources */,
 				B82EE65D24CF38F200E999E8 /* ArtObjectManaged+CoreDataProperties.swift in Sources */,
 				98890B7B24CC788C00A8A268 /* DataResponseError.swift in Sources */,
 				B87C1DB524D2E61800730DDB /* ImageLoaderService.swift in Sources */,
