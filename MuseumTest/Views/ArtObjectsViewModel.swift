@@ -41,6 +41,20 @@ final class ArtObjectsViewModel {
     objects.count
   }
   let imageCache = NSCache<NSString, UIImage>()
+  
+  //let imgCache: [String: UIImage] = [:]
+  //private let imgCacheQueue = DispatchQueue(label: "imgCacheQueue", attributes: .concurrent)
+  /*
+  func readFromCache(guid: String) -> UIImage {
+    imgCacheQueue.sync(flags: .barrier) {
+      return nil
+    }
+  }
+  func writeToCache(guid: String, img: UIImage) {
+    
+  }
+  */
+ 
   private let objectsWritingQueue = DispatchQueue(label: "ArtObjectsViewModel.objectsWritingQueue", attributes: .concurrent)
   
   //let refreshInterval: Int = 300

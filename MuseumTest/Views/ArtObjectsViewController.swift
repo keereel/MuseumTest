@@ -95,12 +95,11 @@ extension ArtObjectsViewController: UITableViewDataSource {
     print("VC: cellForRowAt:\(indexPath.row)")
     
     viewModel.fetchImage(index: indexPath.row) { (result) in
-      
+      // This guard is needed to avoid show image inappropriate for this cell, which can occurs due to reuse of cells
       guard cell.cellIndex == indexPath.row else {
         print("VC: CELL cellIndex = \(cell.cellIndex) indexPath.row = \(indexPath.row)")
         return
       }
-      
       DispatchQueue.main.async {
         switch result {
         case .success(let image):
