@@ -185,6 +185,82 @@ final class ArtObjectsViewModel {
   
   
   // MARK: Fetch images
+  // fetching images in privateContext - performance is the same as when fetching images in viewContext
+  /*
+  func fetchImage(index: Int, completion: @escaping (Result<UIImage?, TextError>) -> Void) {
+    guard index < count else {
+        completion(.failure(TextError("Unexpected error")))
+        return
+    }
+    guard let webImage = objects[index].webImage else {
+      completion(.success(nil))
+      return
+    }
+    
+    // Taking from cache
+    if let cachedImage = imageCache.object(forKey: NSString(string: webImage.guid)) {
+      print("image for index \(index) fetched from cache: \(webImage.guid)")
+      completion(.success(cachedImage))
+      return
+    }
+    
+    // Fetching from persistent store then from api
+    //fetchImageFromPersistentStore(guid: webImage.guid, completion: fetchFromPersistentStoreCompletion)
+    //let fetchFromPersistentStoreCompletion: (UIImage?) -> Void = { fetchedImage in
+    
+    // Fetching from persistent store
+    fetchImageFromPersistentStore(guid: webImage.guid) { fetchedImage in
+      if let image = fetchedImage {
+        print("image for index \(index) fetched from CoreData: \(webImage.guid)")
+        self.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
+        completion(.success(image))
+        return
+      }
+      
+      // Fetching from API
+      print("image for index \(index) TO fetch from API: \(webImage.guid)")
+      self.imageLoader.fetchImage(with: webImage.url) { [weak self] (result) in
+        switch result {
+        case .success(let data):
+          print("image for index \(index) fetched from API: \(webImage.guid)")
+          if let image = UIImage(data: data) {
+            self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
+            self?.saveToPersistentStore(image: image, with: webImage.guid)
+            completion(.success(image))
+          } else {
+            completion(.failure(TextError("Invalid image data")))
+          }
+        case .failure(let error):
+          // TODO retry?
+          completion(.failure(TextError(error.description)))
+        }
+      }
+    }
+  
+  }
+  
+  private func fetchImageFromPersistentStore(guid: String, completion: @escaping (UIImage?) -> Void) {
+    privateContext.perform {
+      let fetchRequest: NSFetchRequest<ImageManaged> = NSFetchRequest(entityName: self.imageEntityName)
+      let predicate = NSPredicate(format: "guid == %@", guid)
+      fetchRequest.predicate = predicate
+      
+      do {
+        let result = try self.privateContext.fetch(fetchRequest)
+        if let imageManaged = result.first,
+          let imageData = imageManaged.image,
+          let image = UIImage(data: imageData) {
+            completion(image)
+        }
+        completion(nil)
+      } catch {
+        print("ERROR: context load image: \(error)")
+        completion(nil)
+      }
+    }
+  }
+  */
+  
   
   func fetchImage(index: Int, completion: @escaping (Result<UIImage?, TextError>) -> Void) {
     guard index < count else {
@@ -219,9 +295,6 @@ final class ArtObjectsViewModel {
         print("image for index \(index) fetched from API: \(webImage.guid)")
         if let image = UIImage(data: data) {
           self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
-          //DispatchQueue.main.async {
-            //self?.saveToPersistentStore(image: image, with: webImage.guid)
-          //}
           self?.saveToPersistentStore(image: image, with: webImage.guid)
           completion(.success(image))
         } else {
@@ -233,41 +306,6 @@ final class ArtObjectsViewModel {
       }
     }
   }
-  
-  /*
-  private func fetchImageFromPersistentStore(guid: String) -> UIImage? {
-    let fetchRequest: NSFetchRequest<ImageManaged> = NSFetchRequest(entityName: imageEntityName)
-    let predicate = NSPredicate(format: "guid == %@", guid)
-    fetchRequest.predicate = predicate
-    
-    do {
-      let result = try context.fetch(fetchRequest)
-      guard let imageManaged = result.first,
-        let imageData = imageManaged.image,
-        let image = UIImage(data: imageData)
-        else {
-          return nil
-      }
-      return image
-    } catch {
-      return nil
-    }
-  }
-  */
-  
-  /*
-  private func saveToPersistentStore(image: UIImage, with guid: String) {
-    guard let entityDescription = NSEntityDescription.entity(forEntityName: imageEntityName, in: context),
-      let createdImageManaged = NSManagedObject(entity: entityDescription, insertInto: context) as? ImageManaged else {
-        return
-    }
-    createdImageManaged.guid = guid
-    createdImageManaged.image = image.jpegData(compressionQuality: 0.9)
-    //createdImageManaged.image = image.pngData()
-    
-    CoreDataStack.shared.saveContext()
-  }
-  */
   
   private func fetchImageFromPersistentStore(guid: String) -> UIImage? {
     var img: UIImage? = nil
@@ -291,7 +329,7 @@ final class ArtObjectsViewModel {
     
     return img
   }
-  
+ 
   private func saveToPersistentStore(image: UIImage, with guid: String) {
     privateContext.perform {
       guard let entityDescription = NSEntityDescription.entity(forEntityName: self.imageEntityName, in: self.privateContext),
