@@ -83,6 +83,7 @@
 			isa = PBXGroup;
 			children = (
 				B87C1DB124D2AED200730DDB /* CoreData */,
+				98890B7824CC759B00A8A268 /* CollectionResponse.swift */,
 				9880CBA524CDEC3D00949E79 /* ArtObject.swift */,
 				B87C1DAF24D1E4D700730DDB /* WebImage.swift */,
 				B87C1DB224D2AF0F00730DDB /* TextError.swift */,
@@ -104,9 +105,7 @@
 		98890B7E24CC7EE600A8A268 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
-				98890B7824CC759B00A8A268 /* CollectionResponse.swift */,
-				98890B7A24CC788C00A8A268 /* DataResponseError.swift */,
-				98890B7C24CC7E3900A8A268 /* HTTPURLResponse+successStatusCode.swift */,
+				B8517C3E24D6C7890028E350 /* Models */,
 				98890B7624CC5DE400A8A268 /* MuseumApiClient.swift */,
 				B87C1DB424D2E61800730DDB /* ImageLoaderService.swift */,
 				B8517C3C24D5F80F0028E350 /* Reachability.swift */,
@@ -135,10 +134,10 @@
 		98E17F7024CC387E00CC5493 /* MuseumTest */ = {
 			isa = PBXGroup;
 			children = (
-				B86E1B3724D5909F00CE95DE /* PersistentStore */,
 				9880CBA424CDEB3900949E79 /* Views */,
 				9880CBA124CDBE0200949E79 /* Models */,
 				98890B7E24CC7EE600A8A268 /* Networking */,
+				B86E1B3724D5909F00CE95DE /* PersistentStore */,
 				98E17F7124CC387E00CC5493 /* AppDelegate.swift */,
 				98E17F7324CC387E00CC5493 /* SceneDelegate.swift */,
 				98E17F7724CC387E00CC5493 /* Main.storyboard */,
@@ -147,6 +146,15 @@
 				98E17F8224CC388300CC5493 /* Info.plist */,
 			);
 			path = MuseumTest;
+			sourceTree = "<group>";
+		};
+		B8517C3E24D6C7890028E350 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				98890B7A24CC788C00A8A268 /* DataResponseError.swift */,
+				98890B7C24CC7E3900A8A268 /* HTTPURLResponse+successStatusCode.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		B86E1B3724D5909F00CE95DE /* PersistentStore */ = {

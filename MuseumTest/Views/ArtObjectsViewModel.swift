@@ -90,36 +90,6 @@ final class ArtObjectsViewModel {
       return
     }
     
-    /*
-    // Then try to fetch from persistent store
-    if let pageManaged = persistentStore.fetchFromPersistentStore(queryString: queryString, page: page),
-      let lastRefreshed = pageManaged.refreshDate,
-      Date() < lastRefreshed.addingTimeInterval(TimeInterval(refreshInterval)),
-      let artObjectsManaged = pageManaged.artObjects?.array as? [ArtObjectManaged] {
-      
-      print("fetched: page \(page) from CoreData")
-      let artObjects = artObjectsManaged.compactMap { persistentStore.artObject(with: $0) }
-      // TODO debug mofifier, remove it
-      /*
-      let loadedObjects = artObjects.map {
-        ArtObject(title: "CD \(page): \($0.objectNumber) \($0.title)",
-          objectNumber: $0.objectNumber,
-          webImage: $0.webImage)
-      }
-      */
-      let loadedObjects = artObjects.enumerated().map {
-        ArtObject(title: "CD \(page): \((page-1)*objectsPerPage+$0) \($1.objectNumber) \($1.title)",
-          objectNumber: $1.objectNumber,
-          webImage: $1.webImage)
-      }
-      //
-      pagesAlreadyInDataSource[page] = lastRefreshed
-      updateDataSourceAndUI(with: loadedObjects, forPageNumber: page)
-      
-      return
-    }
-    */
-    
     // And then fetch from server
     apiClient.fetchArtObjects(queryString: queryString, page: page) { (result) in
       switch result {
@@ -289,7 +259,7 @@ final class ArtObjectsViewModel {
           self?.persistentStore.save(image: image, with: webImage.guid)
           completion(.success(image))
         } else {
-          completion(.failure(TextError("Invalid image data")))
+          completion(.failure(TextError("Unable to load image")))
         }
       case .failure(let error):
         // TODO retry?

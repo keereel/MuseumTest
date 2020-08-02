@@ -170,7 +170,7 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
   
   func onFetchFailed(errorText: String) {
     // TODO alert
-    print("!!! FETCH FAILED: \(errorText)")
+    //print("!!! FETCH FAILED: \(errorText)")
     isBeingUpdatedNow = false
   }
 }
