@@ -13,8 +13,6 @@ class ViewController: UIViewController {
   private var textField: UITextField = UITextField()
   private var showButton: UIButton = UIButton()
   
-  //let apiClient: MuseumApiClient = MuseumApiClient()
-  
   override func viewDidLoad() {
     super.viewDidLoad()
     

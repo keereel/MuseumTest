@@ -160,31 +160,6 @@ final class CoreDataService: PersistentStore {
     return img
   }
   
-  
-  // fetching images in privateContext - performance is the same as when fetching images in viewContext
-  /*
-  private func fetchImageFromPersistentStore(guid: String, completion: @escaping (UIImage?) -> Void) {
-    privateContext.perform {
-      let fetchRequest: NSFetchRequest<ImageManaged> = NSFetchRequest(entityName: self.imageEntityName)
-      let predicate = NSPredicate(format: "guid == %@", guid)
-      fetchRequest.predicate = predicate
-      
-      do {
-        let result = try self.privateContext.fetch(fetchRequest)
-        if let imageManaged = result.first,
-          let imageData = imageManaged.image,
-          let image = UIImage(data: imageData) {
-            completion(image)
-        }
-        completion(nil)
-      } catch {
-        print("ERROR: CoreDataService privateContext load image: \(error)")
-        completion(nil)
-      }
-    }
-  }
-  */
-  
   func save(image: UIImage, with guid: String) {
     privateContext.perform {
       guard let entityDescription = NSEntityDescription.entity(forEntityName: self.imageEntityName, in: self.privateContext),

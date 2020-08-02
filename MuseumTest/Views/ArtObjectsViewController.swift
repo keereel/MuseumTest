@@ -76,13 +76,10 @@ extension ArtObjectsViewController: UITableViewDelegate {
     if previousWillDisplayIndexPath.row < indexPath.row {
       //print("MOVE FORWARD")
       if indexPath.row > viewModel.maxIndex(onPage: viewModel.pageNumber(for: indexPath)) - 3
-        && !isBeingUpdatedNow
-        //&& viewModel.pageNumber(for: indexPath) != viewModel.lastPage
-        {
+        && !isBeingUpdatedNow {
           print("load next page \(viewModel.pageNumber(for: indexPath) + 1)")
           isBeingUpdatedNow = true
           viewModel.fetch(page: viewModel.pageNumber(for: indexPath) + 1)
-          //moveTimerForward()
       }
     } else if previousWillDisplayIndexPath.row > indexPath.row {
       //print("MOVE BACKWARD")
@@ -92,7 +89,6 @@ extension ArtObjectsViewController: UITableViewDelegate {
           print("load prev page \(viewModel.pageNumber(for: indexPath) - 1)")
           isBeingUpdatedNow = true
           viewModel.fetch(page: viewModel.pageNumber(for: indexPath) - 1)
-          //moveTimerForward()
       }
     }
     previousWillDisplayIndexPath = indexPath
@@ -114,25 +110,6 @@ extension ArtObjectsViewController: UITableViewDataSource {
     print("VC: will fetch an image for cellIndex \(indexPath.row)")
     
     viewModel.fetchImage(index: indexPath.row) { [weak self] (result) in
-      /*
-      // v1
-      // This guard is needed to avoid show image inappropriate for this cell, which can occurs due to reuse of cells
-      guard cell.cellIndex == indexPath.row else {
-        print("VC: CELL cellIndex = \(cell.cellIndex) indexPath.row = \(indexPath.row)")
-        return
-      }
-      DispatchQueue.main.async {
-        switch result {
-        case .success(let image):
-          cell.setImage(image: image)
-          print("VC: cellForRowAt:\(indexPath.row) image set")
-        case .failure(let error):
-          // TODO error
-          print("VC: image loading error: \(error.description)")
-        }
-      }
-      */
-      // v2
       DispatchQueue.main.async {
         var cellToSetImage = cell
         if cellToSetImage.cellIndex != indexPath.row {
@@ -173,13 +150,9 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
     UIView.performWithoutAnimation {
       tableView.beginUpdates()
       indexPaths.forEach { (indexPath) in
-        //print("  tableView.numberOfRows = \(tableView.numberOfRows(inSection: 0))")
         if indexPath.row > tableView.numberOfRows(inSection: 0) - 1 {
           print("VC: onFetchCompleted insert: \(indexPath.row)")
           tableView.insertRows(at: [indexPath], with: .none)
-        } else {
-          //print("VC: onFetchCompleted reload: \(indexPath.row)")
-          //tableView.reloadRows(at: [indexPath], with: .none)
         }
       }
       tableView.endUpdates()
@@ -247,12 +220,4 @@ extension ArtObjectsViewController {
       viewModel.fetch(page: pageNum)
     }
   }
-  
-  /*
-  private func moveTimerForward() {
-    print("timer before move \(autoRefreshTimer.fireDate)")
-    autoRefreshTimer.fireDate = Date().addingTimeInterval(TimeInterval(viewModel.refreshInterval + 2))
-    print("timer aftr move \(autoRefreshTimer.fireDate)")
-  }
-  */
 }

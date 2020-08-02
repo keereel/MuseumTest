@@ -36,9 +36,7 @@ final class ArtObjectsViewModel {
  
   private let objectsQueue = DispatchQueue(label: "ArtObjectsViewModel.objectsWritingQueue", attributes: .concurrent)
   
-  // TODO set refresh interval to 300
-  //let refreshInterval: Int = 300
-  let refreshInterval: Int = 15
+  let refreshInterval: Int = 300
   
   
   init(queryString: String, delegate: ArtObjectsViewModelDelegate) {
@@ -48,7 +46,6 @@ final class ArtObjectsViewModel {
   
   deinit {
     print("DEINIT VM")
-    // TODO timel invalidate
   }
   
   
@@ -154,60 +151,6 @@ final class ArtObjectsViewModel {
   
   
   // MARK: Fetch images
-  
-  // fetching images in privateContext - performance is the same as when fetching images in viewContext
-  /*
-  func fetchImage(index: Int, completion: @escaping (Result<UIImage?, TextError>) -> Void) {
-    guard index < count else {
-        completion(.failure(TextError("Unexpected error")))
-        return
-    }
-    guard let webImage = objects[index].webImage else {
-      completion(.success(nil))
-      return
-    }
-    
-    // Taking from cache
-    if let cachedImage = imageCache.object(forKey: NSString(string: webImage.guid)) {
-      print("image for index \(index) fetched from cache: \(webImage.guid)")
-      completion(.success(cachedImage))
-      return
-    }
-    
-    // Fetching from persistent store then from api
-    //fetchImageFromPersistentStore(guid: webImage.guid, completion: fetchFromPersistentStoreCompletion)
-    //let fetchFromPersistentStoreCompletion: (UIImage?) -> Void = { fetchedImage in
-    
-    // Fetching from persistent store
-    fetchImageFromPersistentStore(guid: webImage.guid) { fetchedImage in
-      if let image = fetchedImage {
-        print("image for index \(index) fetched from CoreData: \(webImage.guid)")
-        self.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
-        completion(.success(image))
-        return
-      }
-      
-      // Fetching from API
-      print("image for index \(index) TO fetch from API: \(webImage.guid)")
-      self.imageLoader.fetchImage(with: webImage.url) { [weak self] (result) in
-        switch result {
-        case .success(let data):
-          print("image for index \(index) fetched from API: \(webImage.guid)")
-          if let image = UIImage(data: data) {
-            self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
-            self?.saveToPersistentStore(image: image, with: webImage.guid)
-            completion(.success(image))
-          } else {
-            completion(.failure(TextError("Invalid image data")))
-          }
-        case .failure(let error):
-          completion(.failure(TextError(error.description)))
-        }
-      }
-    }
-  
-  }
-  */
   
   func fetchImage(index: Int, completion: @escaping (Result<UIImage?, TextError>) -> Void) {
     guard index < count else {
