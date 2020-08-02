@@ -44,7 +44,6 @@ final class CoreDataService: PersistentStore {
       let artObjectsManaged = pageManaged.artObjects?.array as? [ArtObjectManaged] else {
         return nil
     }
-    print("fetched: page \(page) from CoreData")
     let artObjects = artObjectsManaged.compactMap { artObject(with: $0) }
     
     return (artObjects: artObjects, lastRefresh: lastRefresh)
@@ -81,8 +80,6 @@ final class CoreDataService: PersistentStore {
           context.delete(artObjectManaged)
       }
       createArtObjectsManaged(with: collectionResponse.artObjects, forPage: pageManaged)
-      
-      print("saveToPersistentStore update")
     
     } else {
     // create page
@@ -96,8 +93,6 @@ final class CoreDataService: PersistentStore {
       
       createArtObjectsManaged(with: collectionResponse.artObjects, forPage: createdPageManaged)
       
-      print("saveToPersistentStore created")
-    
     }
   
     CoreDataStack.shared.saveContext()

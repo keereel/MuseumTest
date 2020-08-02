@@ -66,7 +66,6 @@ final class ArtObjectTableViewCell: UITableViewCell {
     if img.image == nil {
       img.image = image
     }
-    print("VC CELL: image setting done: \(cellIndex)")
   }
   
 }

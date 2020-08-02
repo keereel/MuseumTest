@@ -51,7 +51,6 @@ final class MuseumApiClientImpl: MuseumApiClient {
   func fetchArtObjects(queryString: String, page: Int, completion: @escaping completionHandler) {
     
     let urlString = basePath + "&p=\(page)&q=\(queryString)"
-    print("urlString \(urlString)")
     guard let url = URL(string: urlString) else {
       completion(Result.failure(DataResponseError.query))
       self.removeTaskFromSuspended(queryString: queryString, page: page)
@@ -66,7 +65,6 @@ final class MuseumApiClientImpl: MuseumApiClient {
         let data = data else {
           completion(Result.failure(DataResponseError.network))
           // add tasks to suspended if no network
-          print("ERROR: MuseumApiClient network status: \(self.monitor.currentPath.status)")
           if self.monitor.currentPath.status != .satisfied {
             self.addTaskToSuspended(queryString: queryString, page: page, completion: completion)
           }
@@ -94,12 +92,9 @@ final class MuseumApiClientImpl: MuseumApiClient {
   private func setupNetworkMonitor() {
     monitor.pathUpdateHandler = { [weak self] path in
       if path.status == .satisfied {
-        print("Network status changed: Connected")
         self?.suspendedTasks.forEach { (task, completion) in
           self?.fetchArtObjects(queryString: task.queryString, page: task.page, completion: completion)
         }
-      } else {
-        print("Network status changed: No connection")
       }
     }
     
@@ -110,14 +105,12 @@ final class MuseumApiClientImpl: MuseumApiClient {
   private func addTaskToSuspended(queryString: String, page: Int, completion: @escaping completionHandler) {
     suspendedTasksQueue.async(flags: .barrier) {
       self.suspendedTasks[PageDataTask(queryString: queryString, page: page)] = completion
-      print("MuseumApiClient: suspendedTask added, count \(self.suspendedTasks.count)")
     }
   }
   
   private func removeTaskFromSuspended(queryString: String, page: Int) {
     suspendedTasksQueue.async(flags: .barrier) {
       self.suspendedTasks[PageDataTask(queryString: queryString, page: page)] = nil
-      print("MuseumApiClient: suspendedTask removed, count \(self.suspendedTasks.count)")
     }
   }
   

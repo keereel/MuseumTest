@@ -54,7 +54,6 @@ final class ImageLoaderServiceImpl: ImageLoaderService {
       var taskIsSuspended = false
       if self.suspendedTasks.keys.contains(urlString) {
         taskIsSuspended = true
-        print("ImageLoaderService suspended task begin \(urlString)")
       }
       
       if self.tasks.keys.contains(url) && !taskIsSuspended {
@@ -95,16 +94,11 @@ final class ImageLoaderServiceImpl: ImageLoaderService {
   private func setupNetworkMonitor() {
     monitor.pathUpdateHandler = { [weak self] path in
       if path.status == .satisfied {
-        print("Network status changed: Connected")
-        print("ImageLoaderService suspended tasks foreach \(self?.suspendedTasks.count)")
         self?.suspendedTasksQueue.async(flags: .barrier) {
           self?.suspendedTasks.forEach { (urlString, completion) in
             self?.fetchImage(with: urlString, completion: completion)
           }
         }
-        print("ImageLoaderService suspended tasks foreach ended")
-      } else {
-        print("Network status changed: No connection")
       }
     }
     let queue = DispatchQueue(label: "ImageLoaderServiceImpl.networkMonitor")
@@ -114,14 +108,12 @@ final class ImageLoaderServiceImpl: ImageLoaderService {
   private func addTaskToSuspended(urlString: String, completion: @escaping completionHandler) {
     suspendedTasksQueue.async(flags: .barrier) {
       self.suspendedTasks[urlString] = completion
-      print("ImageLoaderService: suspendedTask added, count \(self.suspendedTasks.count)")
     }
   }
   
   private func removeTaskFromSuspended(urlString: String) {
     suspendedTasksQueue.async(flags: .barrier) {
       self.suspendedTasks[urlString] = nil
-      print("ImageLoaderService: suspendedTask removed, count \(self.suspendedTasks.count)")
     }
   }
   

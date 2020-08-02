@@ -56,7 +56,6 @@ final class ArtObjectsViewModel {
     //    just return to avoid redundant coreData calls
     if let dateOfPage = pagesAlreadyInDataSource[page],
       Date() < dateOfPage.addingTimeInterval(TimeInterval(refreshInterval)) {
-      print("not fetched: page \(page) no necessity")
       DispatchQueue.main.async {
         self.delegate?.onFetchCompleted(indexPaths: [])
       }
@@ -67,15 +66,8 @@ final class ArtObjectsViewModel {
     if let fetchResult = persistentStore.fetch(page: page,
                                               queryString: queryString,
                                               secondsToExpire: refreshInterval) {
-      // TODO debug mofifier, remove it
-      let loadedObjects = fetchResult.artObjects.enumerated().map {
-        ArtObject(title: "CD \(page): \((page-1)*objectsPerPage+$0) \($1.objectNumber) \($1.title)",
-          objectNumber: $1.objectNumber,
-          webImage: $1.webImage)
-      }
-      //
       pagesAlreadyInDataSource[page] = fetchResult.lastRefresh
-      updateDataSourceAndUI(with: loadedObjects, forPageNumber: page)
+      updateDataSourceAndUI(with: fetchResult.artObjects, forPageNumber: page)
       
       return
     }
@@ -84,10 +76,8 @@ final class ArtObjectsViewModel {
     apiClient.fetchArtObjects(queryString: queryString, page: page) { [weak self] (result) in
       switch result {
       case .failure(let error):
-        print("ERROR: \(error.description)")
         self?.delegate?.onFetchFailed(errorText: error.description)
       case .success(let collectionResponse):
-        print("fetched: page \(page) from Api")
         self?.fetchSuccessHandler(collectionResponse: collectionResponse)
       }
     }
@@ -97,14 +87,6 @@ final class ArtObjectsViewModel {
     guard let page = collectionResponse.pageNumber else {
       return
     }
-    // TODO debug mofifier, remove it
-    let loadedObjects = collectionResponse.artObjects.enumerated().map {
-      ArtObject(title: "API \(page): \((page-1)*objectsPerPage+$0) \($1.objectNumber) \($1.title)",
-        objectNumber: $1.objectNumber,
-        webImage: $1.webImage)
-    }
-    //loadedObjects.forEach { print("\($0.webImage?.url)") }
-    //
     
     // save to persistent store
     let lastUpdatedDate = Date()
@@ -115,7 +97,7 @@ final class ArtObjectsViewModel {
     self.totalObjects = collectionResponse.count
     
     pagesAlreadyInDataSource[page] = lastUpdatedDate
-    updateDataSourceAndUI(with: loadedObjects, forPageNumber: page)
+    updateDataSourceAndUI(with: collectionResponse.artObjects, forPageNumber: page)
   }
   
   private func updateDataSourceAndUI(with artObjects: [ArtObject], forPageNumber page: Int) {
@@ -164,25 +146,21 @@ final class ArtObjectsViewModel {
     
     // Taking from cache
     if let cachedImage = imageCache.object(forKey: NSString(string: webImage.guid)) {
-      print("image for index \(index) fetched from cache: \(webImage.url)")
       completion(.success(cachedImage))
       return
     }
     
     // Fetching from persistent store
     if let image = persistentStore.fetchImage(guid: webImage.guid) {
-      print("image for index \(index) fetched from CoreData: \(webImage.url)")
       imageCache.setObject(image, forKey: NSString(string: webImage.guid))
       completion(.success(image))
       return
     }
     
     // Fetching from API
-    print("image for index \(index) TO fetch from API: \(webImage.url)")
     imageLoader.fetchImage(with: webImage.url) { [weak self] (result) in
       switch result {
       case .success(let data):
-        print("image for index \(index) fetched from API: \(webImage.url)")
         if let image = UIImage(data: data) {
           self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
           self?.persistentStore.save(image: image, with: webImage.guid)

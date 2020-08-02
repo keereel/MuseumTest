@@ -74,19 +74,15 @@ final class ArtObjectsViewController: UIViewController {
 extension ArtObjectsViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
     if previousWillDisplayIndexPath.row < indexPath.row {
-      //print("MOVE FORWARD")
       if indexPath.row > viewModel.maxIndex(onPage: viewModel.pageNumber(for: indexPath)) - 3
         && !isBeingUpdatedNow {
-          print("load next page \(viewModel.pageNumber(for: indexPath) + 1)")
           isBeingUpdatedNow = true
           viewModel.fetch(page: viewModel.pageNumber(for: indexPath) + 1)
       }
     } else if previousWillDisplayIndexPath.row > indexPath.row {
-      //print("MOVE BACKWARD")
       if indexPath.row < viewModel.minIndex(onPage: viewModel.pageNumber(for: indexPath)) + 3
         && !isBeingUpdatedNow
         && viewModel.pageNumber(for: indexPath) != viewModel.firstPage {
-          print("load prev page \(viewModel.pageNumber(for: indexPath) - 1)")
           isBeingUpdatedNow = true
           viewModel.fetch(page: viewModel.pageNumber(for: indexPath) - 1)
       }
@@ -107,31 +103,25 @@ extension ArtObjectsViewController: UITableViewDataSource {
     }
     
     cell.configure(title: viewModel.objects[indexPath.row].title, cellIndex: indexPath.row)
-    print("VC: will fetch an image for cellIndex \(indexPath.row)")
     
     viewModel.fetchImage(index: indexPath.row) { [weak self] (result) in
       DispatchQueue.main.async {
         var cellToSetImage = cell
         if cellToSetImage.cellIndex != indexPath.row {
-          print("VC: CELL cellIndex = \(cellToSetImage.cellIndex) indexPath.row = \(indexPath.row)")
           let indexPathForCellToSetImage = IndexPath(row: indexPath.row, section: 0)
           guard let tmpcell = tableView.cellForRow(at: indexPathForCellToSetImage) as? ArtObjectTableViewCell else {
             return
           }
           cellToSetImage = tmpcell
-          print("VC: tmpcell.cellindex = \(tmpcell.cellIndex)")
         }
         
         switch result {
         case .success(let image):
           cellToSetImage.setImage(image: image)
-          print("VC: cellForRowAt: \(indexPath.row) image set")
         case .failure(let error):
           self?.showError(withText: error.description)
-          print("VC: image loading error: \(error.description)")
         }
       }
-      
     }
     
     return cell
@@ -141,17 +131,10 @@ extension ArtObjectsViewController: UITableViewDataSource {
 // MARK: ViewModel Delegate
 extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
   func onFetchCompleted(indexPaths: [IndexPath]) {
-    //
-    print("VC: onFetchCompleted viewModel.count \(viewModel.count)")
-    print("VC: onFetchCompleted tableView.numberOfRows: \(tableView.numberOfRows(inSection: 0))")
-    print("VC: onFetchCompleted indexPaths \(indexPaths)")
-    //
-    
     UIView.performWithoutAnimation {
       tableView.beginUpdates()
       indexPaths.forEach { (indexPath) in
         if indexPath.row > tableView.numberOfRows(inSection: 0) - 1 {
-          print("VC: onFetchCompleted insert: \(indexPath.row)")
           tableView.insertRows(at: [indexPath], with: .none)
         }
       }
@@ -207,7 +190,6 @@ extension ArtObjectsViewController {
 // MARK: Timer
 extension ArtObjectsViewController {
   @objc private func autoRefreshTimerFires(_ timer: Timer) {
-    print("timer current \(Date())")
     guard let visibleIndexPaths = tableView.indexPathsForVisibleRows,
     let minIndexPath = visibleIndexPaths.min(),
     let maxIndexPath = visibleIndexPaths.max() else {
