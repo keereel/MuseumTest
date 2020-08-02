@@ -36,26 +36,19 @@ final class ArtObjectsViewModel {
  
   private let objectsQueue = DispatchQueue(label: "ArtObjectsViewModel.objectsWritingQueue", attributes: .concurrent)
   
+  // TODO set refresh interval to 300
   //let refreshInterval: Int = 300
-  let refreshInterval: Int = 30
+  let refreshInterval: Int = 15
   
   
   init(queryString: String, delegate: ArtObjectsViewModelDelegate) {
     self.queryString = queryString
     self.delegate = delegate
-    
-    // TODO on network problems....
-    /*
-    NotificationCenter.default.addObserver(
-        self,
-        selector: #selector(onInternetConnectionChanged(_:)),
-        name: .reachabilityChanged,
-        object: connectionService)
-    */
   }
   
   deinit {
     print("DEINIT VM")
+    // TODO timel invalidate
   }
   
   
@@ -208,7 +201,6 @@ final class ArtObjectsViewModel {
             completion(.failure(TextError("Invalid image data")))
           }
         case .failure(let error):
-          // TODO retry?
           completion(.failure(TextError(error.description)))
         }
       }

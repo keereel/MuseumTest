@@ -23,14 +23,24 @@ final class ArtObjectsViewController: UIViewController {
   private var recentlyDisplayedErrors: [String: Date] = [:]
   private let sameErrorDisplayingInterval: Int = 10
   
+  // this timer is just checks if refresh is needed, but refreshing mechanism is in viewModel and refreshing occurs according to refresh interval - 5 mins
+  private var autoRefreshTimer: Timer!
+  private let checkIsRefreshNeededInterval = 20
+  
   init(queryString: String) {
     super.init(nibName: nil, bundle: nil)
     let vm = ArtObjectsViewModel(queryString: queryString, delegate: self)
     self.viewModel = vm
+    self.autoRefreshTimer = Timer.scheduledTimer(timeInterval: TimeInterval(checkIsRefreshNeededInterval),
+                                      target: self,
+                                      selector: #selector(autoRefreshTimerFires(_:)),
+                                      userInfo: self,
+                                      repeats: true)
   }
   
   deinit {
     print("DEINIT VC")
+    autoRefreshTimer.invalidate()
   }
   
   required init?(coder aDecoder: NSCoder) {
@@ -60,6 +70,7 @@ final class ArtObjectsViewController: UIViewController {
   
 }
 
+// MARK: UITableViewDelegate
 extension ArtObjectsViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
     if previousWillDisplayIndexPath.row < indexPath.row {
@@ -71,6 +82,7 @@ extension ArtObjectsViewController: UITableViewDelegate {
           print("load next page \(viewModel.pageNumber(for: indexPath) + 1)")
           isBeingUpdatedNow = true
           viewModel.fetch(page: viewModel.pageNumber(for: indexPath) + 1)
+          //moveTimerForward()
       }
     } else if previousWillDisplayIndexPath.row > indexPath.row {
       //print("MOVE BACKWARD")
@@ -80,12 +92,14 @@ extension ArtObjectsViewController: UITableViewDelegate {
           print("load prev page \(viewModel.pageNumber(for: indexPath) - 1)")
           isBeingUpdatedNow = true
           viewModel.fetch(page: viewModel.pageNumber(for: indexPath) - 1)
+          //moveTimerForward()
       }
     }
     previousWillDisplayIndexPath = indexPath
   }
 }
 
+// MARK: UITableViewDataSource
 extension ArtObjectsViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     return viewModel.count
@@ -147,6 +161,7 @@ extension ArtObjectsViewController: UITableViewDataSource {
   }
 }
 
+// MARK: ViewModel Delegate
 extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
   func onFetchCompleted(indexPaths: [IndexPath]) {
     //
@@ -178,6 +193,7 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
   }
 }
 
+// MARK: Show errors
 extension ArtObjectsViewController {
   private func showError(withText errorText: String) {
     DispatchQueue.main.async {
@@ -213,4 +229,30 @@ extension ArtObjectsViewController {
       self.present(alert, animated: true)
     }
   }
+}
+
+// MARK: Timer
+extension ArtObjectsViewController {
+  @objc private func autoRefreshTimerFires(_ timer: Timer) {
+    print("timer current \(Date())")
+    guard let visibleIndexPaths = tableView.indexPathsForVisibleRows,
+    let minIndexPath = visibleIndexPaths.min(),
+    let maxIndexPath = visibleIndexPaths.max() else {
+      return
+    }
+    
+    let minPage = viewModel.pageNumber(for: minIndexPath)
+    let maxPage = viewModel.pageNumber(for: maxIndexPath)
+    for pageNum in minPage...maxPage {
+      viewModel.fetch(page: pageNum)
+    }
+  }
+  
+  /*
+  private func moveTimerForward() {
+    print("timer before move \(autoRefreshTimer.fireDate)")
+    autoRefreshTimer.fireDate = Date().addingTimeInterval(TimeInterval(viewModel.refreshInterval + 2))
+    print("timer aftr move \(autoRefreshTimer.fireDate)")
+  }
+  */
 }

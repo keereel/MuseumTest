@@ -22,16 +22,6 @@ final class MuseumApiClientImpl: MuseumApiClient {
     let page: Int
   }
   
-  // key ipNvjG2r
-  // https://www.rijksmuseum.nl/api/nl/collection?key=ipNvjG2r&involvedMaker=Rembrandt+van+Rijn
-  // https://www.rijksmuseum.nl/api/nl/collection?key=ipNvjG2r&involvedMaker=Johannes+Vermeer
-  // https://www.rijksmuseum.nl/api/nl/collection?key=ipNvjG2r&q=Rembrand
-  //
-  // https://data.rijksmuseum.nl/
-  //
-  // rembrandt van rijn
-  // johannes vermeer
-  
   private let apiKey = "ipNvjG2r"
   
   private var basePath: String {
