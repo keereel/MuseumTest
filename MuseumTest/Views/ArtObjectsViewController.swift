@@ -99,7 +99,7 @@ extension ArtObjectsViewController: UITableViewDataSource {
     cell.configure(title: viewModel.objects[indexPath.row].title, cellIndex: indexPath.row)
     print("VC: will fetch an image for cellIndex \(indexPath.row)")
     
-    viewModel.fetchImage(index: indexPath.row) { (result) in
+    viewModel.fetchImage(index: indexPath.row) { [weak self] (result) in
       /*
       // v1
       // This guard is needed to avoid show image inappropriate for this cell, which can occurs due to reuse of cells
@@ -136,7 +136,7 @@ extension ArtObjectsViewController: UITableViewDataSource {
           cellToSetImage.setImage(image: image)
           print("VC: cellForRowAt: \(indexPath.row) image set")
         case .failure(let error):
-          self.showError(withText: error.description)
+          self?.showError(withText: error.description)
           print("VC: image loading error: \(error.description)")
         }
       }

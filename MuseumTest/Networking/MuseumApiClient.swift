@@ -75,12 +75,12 @@ final class MuseumApiClientImpl: MuseumApiClient {
         httpResponse.hasSuccessStatusCode,
         let data = data else {
           completion(Result.failure(DataResponseError.network))
-          //
+          // add tasks to suspended if no network
           print("ERROR: MuseumApiClient network status: \(self.monitor.currentPath.status)")
           if self.monitor.currentPath.status != .satisfied {
             self.addTaskToSuspended(queryString: queryString, page: page, completion: completion)
           }
-          //
+          
           return
       }
       
@@ -102,16 +102,17 @@ final class MuseumApiClientImpl: MuseumApiClient {
   
   
   private func setupNetworkMonitor() {
-    monitor.pathUpdateHandler = { path in
+    monitor.pathUpdateHandler = { [weak self] path in
       if path.status == .satisfied {
         print("Network status changed: Connected")
-        self.suspendedTasks.forEach { (task, completion) in
-          self.fetchArtObjects(queryString: task.queryString, page: task.page, completion: completion)
+        self?.suspendedTasks.forEach { (task, completion) in
+          self?.fetchArtObjects(queryString: task.queryString, page: task.page, completion: completion)
         }
       } else {
         print("Network status changed: No connection")
       }
     }
+    
     let queue = DispatchQueue(label: "MuseumApiClient.networkMonitor")
     monitor.start(queue: queue)
   }

@@ -68,7 +68,10 @@ final class ImageLoaderServiceImpl: ImageLoaderService {
           self?.tasksQueue.async(flags: .barrier) {
             guard let data = data else {
               completion(Result.failure(DataResponseError.network))
-              self?.addTaskToSuspended(urlString: urlString, completion: completion)
+              // add tasks to suspended if no network
+              if self?.monitor.currentPath.status != .satisfied {
+                self?.addTaskToSuspended(urlString: urlString, completion: completion)
+              }
               return
             }
             
@@ -90,13 +93,13 @@ final class ImageLoaderServiceImpl: ImageLoaderService {
   
   
   private func setupNetworkMonitor() {
-    monitor.pathUpdateHandler = { path in
+    monitor.pathUpdateHandler = { [weak self] path in
       if path.status == .satisfied {
         print("Network status changed: Connected")
-        print("ImageLoaderService suspended tasks foreach \(self.suspendedTasks.count)")
-        self.suspendedTasksQueue.async(flags: .barrier) {
-          self.suspendedTasks.forEach { (urlString, completion) in
-            self.fetchImage(with: urlString, completion: completion)
+        print("ImageLoaderService suspended tasks foreach \(self?.suspendedTasks.count)")
+        self?.suspendedTasksQueue.async(flags: .barrier) {
+          self?.suspendedTasks.forEach { (urlString, completion) in
+            self?.fetchImage(with: urlString, completion: completion)
           }
         }
         print("ImageLoaderService suspended tasks foreach ended")

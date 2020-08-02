@@ -91,14 +91,14 @@ final class ArtObjectsViewModel {
     }
     
     // And then fetch from server
-    apiClient.fetchArtObjects(queryString: queryString, page: page) { (result) in
+    apiClient.fetchArtObjects(queryString: queryString, page: page) { [weak self] (result) in
       switch result {
       case .failure(let error):
         print("ERROR: \(error.description)")
-        self.delegate?.onFetchFailed(errorText: error.description)
+        self?.delegate?.onFetchFailed(errorText: error.description)
       case .success(let collectionResponse):
         print("fetched: page \(page) from Api")
-        self.fetchSuccessHandler(collectionResponse: collectionResponse)
+        self?.fetchSuccessHandler(collectionResponse: collectionResponse)
       }
     }
   }
@@ -229,7 +229,6 @@ final class ArtObjectsViewModel {
     
     // Taking from cache
     if let cachedImage = imageCache.object(forKey: NSString(string: webImage.guid)) {
-      //print("image for index \(index) fetched from cache: \(webImage.guid)")
       print("image for index \(index) fetched from cache: \(webImage.url)")
       completion(.success(cachedImage))
       return
@@ -237,7 +236,6 @@ final class ArtObjectsViewModel {
     
     // Fetching from persistent store
     if let image = persistentStore.fetchImage(guid: webImage.guid) {
-      //print("image for index \(index) fetched from CoreData: \(webImage.guid)")
       print("image for index \(index) fetched from CoreData: \(webImage.url)")
       imageCache.setObject(image, forKey: NSString(string: webImage.guid))
       completion(.success(image))
@@ -245,12 +243,10 @@ final class ArtObjectsViewModel {
     }
     
     // Fetching from API
-    //print("image for index \(index) TO fetch from API: \(webImage.guid)")
     print("image for index \(index) TO fetch from API: \(webImage.url)")
     imageLoader.fetchImage(with: webImage.url) { [weak self] (result) in
       switch result {
       case .success(let data):
-        //print("image for index \(index) fetched from API: \(webImage.guid)")
         print("image for index \(index) fetched from API: \(webImage.url)")
         if let image = UIImage(data: data) {
           self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
@@ -260,7 +256,6 @@ final class ArtObjectsViewModel {
           completion(.failure(TextError("Unable to load image")))
         }
       case .failure(let error):
-        // TODO retry?
         completion(.failure(TextError(error.description)))
       }
     }
