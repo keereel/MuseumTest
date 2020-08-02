@@ -35,7 +35,6 @@ final class ArtObjectTableViewCell: UITableViewCell {
     img.contentMode = .scaleAspectFill
     img.clipsToBounds = true
     contentView.addSubview(title)
-    title.backgroundColor = .green
     title.numberOfLines = 0
     
     setConstraints()

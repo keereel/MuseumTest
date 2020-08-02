@@ -51,14 +51,24 @@ class ViewController: UIViewController {
   
   
   @objc func showButtonTapped(sender: UIButton) {
-    guard let queryString = textField.text else {
-      // TODO alert please enter string
+    guard var queryString = textField.text else {
+      showAlert()
       return
     }
-    //let artObjectsVM = ArtObjectsViewModel(queryString: queryString)
-    //let artObjectsVC = ArtObjectsViewController(viewModel: artObjectsVM)
+    guard queryString.trimmingCharacters(in: .whitespacesAndNewlines).count > 0 else {
+      showAlert()
+      return
+    }
+    
+    queryString = queryString.trimmingCharacters(in: .whitespacesAndNewlines)
     let artObjectsVC = ArtObjectsViewController(queryString: queryString)
     self.navigationController?.pushViewController(artObjectsVC, animated: true)
   }
-
+  
+  func showAlert() {
+    let alert = UIAlertController(title: nil, message: "Please enter a valid string to search", preferredStyle: .alert)
+    let action: UIAlertAction = UIAlertAction(title: "OK", style: .default)
+    alert.addAction(action)
+    self.present(alert, animated: true)
+  }
 }
