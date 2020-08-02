@@ -153,7 +153,7 @@ final class CoreDataService: PersistentStore {
           img = image
         }
       } catch {
-        print("ERROR: context load image: \(error)")
+        print("ERROR: CoreDataService context load image: \(error)")
       }
     }
     
@@ -178,7 +178,7 @@ final class CoreDataService: PersistentStore {
         }
         completion(nil)
       } catch {
-        print("ERROR: context load image: \(error)")
+        print("ERROR: CoreDataService privateContext load image: \(error)")
         completion(nil)
       }
     }
@@ -198,7 +198,7 @@ final class CoreDataService: PersistentStore {
         do {
           try self.privateContext.save()
         } catch {
-          print("ERROR: privateContext save image: \(error)")
+          print("ERROR: CoreDataService privateContext save image: \(error)")
         }
       }
     }

@@ -235,25 +235,29 @@ final class ArtObjectsViewModel {
     
     // Taking from cache
     if let cachedImage = imageCache.object(forKey: NSString(string: webImage.guid)) {
-      print("image for index \(index) fetched from cache: \(webImage.guid)")
+      //print("image for index \(index) fetched from cache: \(webImage.guid)")
+      print("image for index \(index) fetched from cache: \(webImage.url)")
       completion(.success(cachedImage))
       return
     }
     
     // Fetching from persistent store
     if let image = persistentStore.fetchImage(guid: webImage.guid) {
-      print("image for index \(index) fetched from CoreData: \(webImage.guid)")
+      //print("image for index \(index) fetched from CoreData: \(webImage.guid)")
+      print("image for index \(index) fetched from CoreData: \(webImage.url)")
       imageCache.setObject(image, forKey: NSString(string: webImage.guid))
       completion(.success(image))
       return
     }
     
     // Fetching from API
-    print("image for index \(index) TO fetch from API: \(webImage.guid)")
+    //print("image for index \(index) TO fetch from API: \(webImage.guid)")
+    print("image for index \(index) TO fetch from API: \(webImage.url)")
     imageLoader.fetchImage(with: webImage.url) { [weak self] (result) in
       switch result {
       case .success(let data):
-        print("image for index \(index) fetched from API: \(webImage.guid)")
+        //print("image for index \(index) fetched from API: \(webImage.guid)")
+        print("image for index \(index) fetched from API: \(webImage.url)")
         if let image = UIImage(data: data) {
           self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
           self?.persistentStore.save(image: image, with: webImage.guid)

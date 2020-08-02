@@ -11,6 +11,7 @@ import Network
 
 protocol MuseumApiClient {
   typealias completionHandler = (Result<CollectionResponse, DataResponseError>) -> Void
+  
   func fetchArtObjects(queryString: String, page: Int, completion: @escaping completionHandler)
 }
 
@@ -53,23 +54,9 @@ final class MuseumApiClientImpl: MuseumApiClient {
   
   deinit {
     print("DEINIT MuseumApiClient")
+    monitor.cancel()
   }
   
-  private func setupNetworkMonitor() {
-    monitor.pathUpdateHandler = { path in
-      if path.status == .satisfied {
-        print("NETWORK CHANGE: We're connected!")
-        self.suspendedTasks.forEach { (task, completion) in
-          self.fetchArtObjects(queryString: task.queryString, page: task.page, completion: completion)
-        }
-      } else {
-        print("NETWORK CHANGE: No connection.")
-      }
-      //print(path.isExpensive)
-    }
-    let queue = DispatchQueue(label: "Monitor")
-    monitor.start(queue: queue)
-  }
   
   func fetchArtObjects(queryString: String, page: Int, completion: @escaping completionHandler) {
     
@@ -111,6 +98,22 @@ final class MuseumApiClientImpl: MuseumApiClient {
     
     dataTask.resume()
     
+  }
+  
+  
+  private func setupNetworkMonitor() {
+    monitor.pathUpdateHandler = { path in
+      if path.status == .satisfied {
+        print("Network status changed: Connected")
+        self.suspendedTasks.forEach { (task, completion) in
+          self.fetchArtObjects(queryString: task.queryString, page: task.page, completion: completion)
+        }
+      } else {
+        print("Network status changed: No connection")
+      }
+    }
+    let queue = DispatchQueue(label: "MuseumApiClient.networkMonitor")
+    monitor.start(queue: queue)
   }
   
   private func addTaskToSuspended(queryString: String, page: Int, completion: @escaping completionHandler) {
