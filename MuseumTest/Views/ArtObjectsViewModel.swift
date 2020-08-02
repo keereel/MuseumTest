@@ -34,7 +34,7 @@ final class ArtObjectsViewModel {
   private let imageCache = NSCache<NSString, UIImage>()
   private var pagesAlreadyInDataSource: [Int: Date] = [:]
  
-  private let objectsWritingQueue = DispatchQueue(label: "ArtObjectsViewModel.objectsWritingQueue", attributes: .concurrent)
+  private let objectsQueue = DispatchQueue(label: "ArtObjectsViewModel.objectsWritingQueue", attributes: .concurrent)
   
   //let refreshInterval: Int = 300
   let refreshInterval: Int = 30
@@ -136,15 +136,10 @@ final class ArtObjectsViewModel {
       return
     }
     
-    // update images
-    // debug output
-    //artObjects.forEach { print("\($0.webImage?.url)") }
-    //
-    
     // update dataSource
     let firstIndexOnPage = minIndex(onPage: page)
     let lastIndexOnPage = firstIndexOnPage + artObjects.count - 1
-    objectsWritingQueue.sync(flags: .barrier) {
+    objectsQueue.sync(flags: .barrier) {
       for index in firstIndexOnPage...lastIndexOnPage {
         if self.objects.count - 1 < index {
           self.objects.append(artObjects[index-firstIndexOnPage])
@@ -153,7 +148,6 @@ final class ArtObjectsViewModel {
         }
       }
     }
-
     
     // update UI
     var indexPaths: [IndexPath] = []

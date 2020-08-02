@@ -18,6 +18,11 @@ final class ArtObjectsViewController: UIViewController {
   private var viewModel: ArtObjectsViewModel!
   private var isBeingUpdatedNow: Bool = false
   
+  private var errorIsBeingDisplayedNow: Bool = false
+  private var errorMessagesQueue: [String] = []
+  private var recentlyDisplayedErrors: [String: Date] = [:]
+  private let sameErrorDisplayingInterval: Int = 10
+  
   init(queryString: String) {
     super.init(nibName: nil, bundle: nil)
     let vm = ArtObjectsViewModel(queryString: queryString, delegate: self)
@@ -92,7 +97,6 @@ extension ArtObjectsViewController: UITableViewDataSource {
     }
     
     cell.configure(title: viewModel.objects[indexPath.row].title, cellIndex: indexPath.row)
-    //print("VC: cellForRowAt:\(indexPath.row)")
     print("VC: will fetch an image for cellIndex \(indexPath.row)")
     
     viewModel.fetchImage(index: indexPath.row) { (result) in
@@ -132,7 +136,7 @@ extension ArtObjectsViewController: UITableViewDataSource {
           cellToSetImage.setImage(image: image)
           print("VC: cellForRowAt: \(indexPath.row) image set")
         case .failure(let error):
-          // TODO error
+          self.showError(withText: error.description)
           print("VC: image loading error: \(error.description)")
         }
       }
@@ -169,8 +173,44 @@ extension ArtObjectsViewController: ArtObjectsViewModelDelegate {
   }
   
   func onFetchFailed(errorText: String) {
-    // TODO alert
-    //print("!!! FETCH FAILED: \(errorText)")
     isBeingUpdatedNow = false
+    showError(withText: errorText)
+  }
+}
+
+extension ArtObjectsViewController {
+  private func showError(withText errorText: String) {
+    DispatchQueue.main.async {
+      if let sameErrorLastDate = self.recentlyDisplayedErrors[errorText],
+        Date() < sameErrorLastDate.addingTimeInterval(TimeInterval(self.sameErrorDisplayingInterval)) {
+        return
+      }
+      
+      guard !self.errorIsBeingDisplayedNow else {
+        if self.errorMessagesQueue.firstIndex(of: errorText) == nil {
+          self.errorMessagesQueue.append(errorText)
+        }
+        return
+      }
+      
+      self.errorIsBeingDisplayedNow = true
+      self.recentlyDisplayedErrors[errorText] = Date()
+      
+      let alert = UIAlertController(title: nil, message: errorText, preferredStyle: .alert)
+      
+      let action: UIAlertAction = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+        guard let self = self else {
+          return
+        }
+        self.errorIsBeingDisplayedNow = false
+        if self.errorMessagesQueue.count > 0 {
+          self.showError(withText: self.errorMessagesQueue[0])
+          self.errorMessagesQueue.remove(at: 0)
+        }
+      }
+      alert.addAction(action)
+      
+      self.present(alert, animated: true)
+    }
   }
 }

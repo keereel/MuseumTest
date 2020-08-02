@@ -17,13 +17,13 @@ enum DataResponseError: Error {
   var description: String {
     switch self {
     case .network:
-      return "An error occurred while fetching data"
+      return "Unable to load art objects due to network connection issues"
     case .decoding:
-      return "An error occurred while decoding data"
+      return "Unable to load art objects due to invalid data received from server"
     case .query:
-      return "Incorrect query"
+      return "Unable to load data due to invalid query"
     case .invalidUrl:
-      return "Invalid URL"
+      return "Unable to load data due to invalid URL"
     }
   }
 }
