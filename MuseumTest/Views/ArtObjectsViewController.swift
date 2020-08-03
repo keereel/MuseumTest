@@ -24,7 +24,7 @@ final class ArtObjectsViewController: UIViewController {
   private let sameErrorDisplayingInterval: Int = 10
   
   // this timer is just checks if refresh is needed, but refreshing mechanism is in viewModel and refreshing occurs according to refresh interval - 5 mins
-  private var autoRefreshTimer: Timer!
+  private weak var autoRefreshTimer: Timer?
   private let checkIsRefreshNeededInterval = 20
   
   init(queryString: String) {
@@ -34,13 +34,17 @@ final class ArtObjectsViewController: UIViewController {
     self.autoRefreshTimer = Timer.scheduledTimer(timeInterval: TimeInterval(checkIsRefreshNeededInterval),
                                       target: self,
                                       selector: #selector(autoRefreshTimerFires(_:)),
-                                      userInfo: self,
+                                      userInfo: nil,
                                       repeats: true)
   }
   
   deinit {
     print("DEINIT VC")
-    autoRefreshTimer.invalidate()
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    autoRefreshTimer?.invalidate()
   }
   
   required init?(coder aDecoder: NSCoder) {
