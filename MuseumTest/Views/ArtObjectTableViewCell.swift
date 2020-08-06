@@ -15,7 +15,9 @@ final class ArtObjectTableViewCell: UITableViewCell {
   private var title: UILabel = UILabel()
   var cellIndex: Int = 0
   
-  private let imgSize: CGFloat = 150
+  private var imgSize: CGFloat {
+    CommonParameters.shared.thumbnailSideSize
+  }
   private let contentOffsetX: CGFloat = 20
   private let contentOffsetY: CGFloat = 10
   
