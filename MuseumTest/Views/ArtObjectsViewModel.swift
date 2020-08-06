@@ -21,7 +21,7 @@ final class ArtObjectsViewModel {
   
   private let apiClient: MuseumApiClient = MuseumApiClientImpl()
   private let imageLoader: ImageLoaderService = ImageLoaderServiceImpl()
-  private let persistentStore: CoreDataService = CoreDataService()
+  private let persistentStore: PersistentStore = CoreDataService()
   
   private weak var delegate: ArtObjectsViewModelDelegate?
   
@@ -36,7 +36,9 @@ final class ArtObjectsViewModel {
  
   private let objectsQueue = DispatchQueue(label: "ArtObjectsViewModel.objectsWritingQueue", attributes: .concurrent)
   
-  let refreshInterval: Int = 300
+  private var refreshInterval: Int {
+    CommonParameters.shared.refreshIntervalInSeconds
+  }
   
   
   init(queryString: String, delegate: ArtObjectsViewModelDelegate) {
@@ -162,9 +164,13 @@ final class ArtObjectsViewModel {
       switch result {
       case .success(let data):
         if let image = UIImage(data: data) {
-          self?.imageCache.setObject(image, forKey: NSString(string: webImage.guid))
-          self?.persistentStore.save(image: image, with: webImage.guid)
-          completion(.success(image))
+          //let newSize = CGSize(width: image.size.width/4, height: image.size.height/4)
+          //let resizedImage = image.resized(to: newSize)
+          //let resizedImage = UIImage.scale(image: image, by: 0.2)!
+          let resizedImage = UIImage.resize(image: image, minimalPartOfSize: CommonParameters.shared.thumbnailSideSize)
+          self?.imageCache.setObject(resizedImage, forKey: NSString(string: webImage.guid))
+          self?.persistentStore.save(image: resizedImage, with: webImage.guid)
+          completion(.success(resizedImage))
         } else {
           completion(.failure(TextError("Unable to load image")))
         }
