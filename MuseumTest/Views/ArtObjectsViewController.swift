@@ -105,8 +105,12 @@ extension ArtObjectsViewController: UITableViewDataSource {
     guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? ArtObjectTableViewCell else {
       return UITableViewCell()
     }
+    if cell.cellIndex == indexPath.row && indexPath.row != 0 {
+      return cell
+    }
     
-    cell.configure(title: viewModel.objects[indexPath.row].title, cellIndex: indexPath.row)
+    let artObject = viewModel.artObject(for: indexPath)
+    cell.configure(title: artObject.title, cellIndex: indexPath.row)
     
     viewModel.fetchImage(index: indexPath.row) { [weak self] (result) in
       DispatchQueue.main.async {
