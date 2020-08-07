@@ -114,7 +114,12 @@ extension ArtObjectsViewController: UITableViewDataSource {
       return UITableViewCell()
     }
     
-    cell.configure(title: viewModel.objects[indexPath.row].title, cellIndex: indexPath.row)
+    if cell.cellIndex == indexPath.row && indexPath.row != 0 {
+      return cell
+    }
+    
+    let artObject = viewModel.artObject(for: indexPath)
+    cell.configure(title: artObject.title, cellIndex: indexPath.row)
     print("VC: will fetch an image for cellIndex \(indexPath.row)")
     
     viewModel.fetchImage(index: indexPath.row) { [weak self] (result) in

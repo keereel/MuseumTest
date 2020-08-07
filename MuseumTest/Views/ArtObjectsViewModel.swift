@@ -27,7 +27,7 @@ final class ArtObjectsViewModel {
   
   var totalObjects = 0
   
-  var objects: [ArtObject] = []
+  private var objects: [ArtObject] = []
   var count: Int {
     objects.count
   }
@@ -48,6 +48,16 @@ final class ArtObjectsViewModel {
   
   deinit {
     print("DEINIT VM")
+  }
+  
+  func artObject(for indexPath: IndexPath) -> ArtObject {
+    return artObject(for: indexPath.row)
+  }
+  
+  private func artObject(for index: Int) -> ArtObject {
+    objectsQueue.sync(flags: .barrier) {
+      return objects[index]
+    }
   }
   
   
@@ -213,7 +223,7 @@ final class ArtObjectsViewModel {
         completion(.failure(TextError("Unexpected error")))
         return
     }
-    guard let webImage = objects[index].webImage else {
+    guard let webImage = artObject(for: index).webImage else {
       completion(.success(nil))
       return
     }
